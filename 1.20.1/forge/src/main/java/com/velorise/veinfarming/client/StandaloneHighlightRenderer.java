@@ -651,6 +651,7 @@ public class StandaloneHighlightRenderer {
                 if (stateToRender == null) continue;
 
                 BlockPos plantPos = isCocoaPlanting ? pos : pos.above();
+                if (isCameraInsideBlock(camPos, plantPos)) continue;
                 poseStack.pushPose();
                 if (!isCocoaPlanting) {
                     poseStack.translate(plantPos.getX() - camPos.x + 0.5, plantPos.getY() - camPos.y + 0.004, plantPos.getZ() - camPos.z + 0.5);
@@ -704,6 +705,7 @@ public class StandaloneHighlightRenderer {
                     MultiBufferSource fadedFruitBuffer = type -> fadedFruitConsumer;
 
                     for (BlockPos fruitPos : fruitSpots) {
+                        if (isCameraInsideBlock(camPos, fruitPos)) continue;
                         poseStack.pushPose();
                         poseStack.translate(fruitPos.getX() - camPos.x + 0.5, fruitPos.getY() - camPos.y + 0.004, fruitPos.getZ() - camPos.z + 0.5);
                         poseStack.scale(0.994f, 1.0f, 0.994f);
@@ -731,6 +733,13 @@ public class StandaloneHighlightRenderer {
      * Lifts the preview just above low flat surface covers (e.g. snow layers, leaf litter, petals)
      * that will be cleared on till so the cover does not occlude the preview.
      */
+
+    private static boolean isCameraInsideBlock(Vec3 camPos, BlockPos pos) {
+        return camPos.x >= pos.getX() - 0.15 && camPos.x <= pos.getX() + 1.15
+                && camPos.y >= pos.getY() - 0.15 && camPos.y <= pos.getY() + 1.15
+                && camPos.z >= pos.getZ() - 0.15 && camPos.z <= pos.getZ() + 1.15;
+    }
+
     private static double getHoePreviewTopY(net.minecraft.world.level.Level level, BlockPos pos) {
         BlockState targetState = level.getBlockState(pos);
         VoxelShape shape = targetState.getShape(level, pos);

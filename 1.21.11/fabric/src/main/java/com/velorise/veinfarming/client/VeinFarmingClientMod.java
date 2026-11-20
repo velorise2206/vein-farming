@@ -46,7 +46,7 @@ public class VeinFarmingClientMod implements ClientModInitializer {
 
         // Register 3D Wireframe and Ghost highlight rendering
         WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register(StandaloneHighlightRenderer::onBlockOutline);
-        WorldRenderEvents.AFTER_ENTITIES.register(StandaloneHighlightRenderer::onRenderWorld);
+        WorldRenderEvents.END_MAIN.register(StandaloneHighlightRenderer::onRenderWorld);
     }
 }
 

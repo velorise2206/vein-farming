@@ -581,6 +581,7 @@ public class StandaloneHighlightRenderer {
                 if (stateToRender == null) continue;
 
                 BlockPos plantPos = isCocoaPlanting ? pos : pos.above();
+                if (isCameraInsideBlock(mc.gameRenderer.mainCamera().position(), plantPos)) continue;
                 double plantYOffset = isCocoaPlanting ? 0.0 : 0.004;
                 float plantScaleXZ = isCocoaPlanting ? 1.0f : 0.996f;
                 worldGhostBlocks.add(new GhostBlock(
@@ -616,6 +617,7 @@ public class StandaloneHighlightRenderer {
                 }
 
                 for (BlockPos fruitPos : fruitSpots) {
+                    if (isCameraInsideBlock(mc.gameRenderer.mainCamera().position(), fruitPos)) continue;
                     worldGhostBlocks.add(new GhostBlock(
                             fruitState, fruitPos,
                             fruitPos.getX(), fruitPos.getY() + 0.004, fruitPos.getZ(),
@@ -689,6 +691,13 @@ public class StandaloneHighlightRenderer {
      * Lifts the preview just above low flat surface covers (e.g. snow layers, leaf litter, petals)
      * that will be cleared on till so the cover does not occlude the preview.
      */
+
+    private static boolean isCameraInsideBlock(Vec3 camPos, BlockPos pos) {
+        return camPos.x >= pos.getX() - 0.15 && camPos.x <= pos.getX() + 1.15
+                && camPos.y >= pos.getY() - 0.15 && camPos.y <= pos.getY() + 1.15
+                && camPos.z >= pos.getZ() - 0.15 && camPos.z <= pos.getZ() + 1.15;
+    }
+
     private static double getHoePreviewTopY(Level level, BlockPos pos) {
         BlockState targetState = level.getBlockState(pos);
         VoxelShape shape = targetState.getShape(level, pos);

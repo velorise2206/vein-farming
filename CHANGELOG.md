@@ -4,14 +4,14 @@ All notable changes to **Vein Farming** are documented in this file.
 
 ---
 
-## [2.0.3] — Claim Protection, Performance & Algorithm Fixes
+## [2.0.3] — Bug Fixes & Refinements
 
-- Enforced per-block claim protection (`BlockEvent.BreakEvent` / `PlayerBlockBreakEvents.BEFORE`) across mass harvest, destroy, planting, tilling, water-hole digging, and flower bone meal.
-- Upgraded Smart Water Bucket Irrigation (`PlantingAlgorithms.isWaterHoleContained`) to require a solid floor and 4 enclosing horizontal blocks so water never spills off edges, terraces, or slopes.
-- Fixed Standalone outline preview getting stuck active by polling live GLFW physical key state, synced client-server activation rules, and excluded non-tillable blocks (`moss`, `mud`, `podzol`, `mycelium`) from hoe preview.
-- Fixed melon/pumpkin stem parity near water (requiring at least one open adjacent fruit spot), added upper-block clearance and claim checks for 2-tall flowers (`DoublePlantBlock`), and enforced complete 4-sapling batching for strictly 2×2 saplings (Dark Oak / Pale Oak).
-- Added `level.isLoaded` guards to all BFS scans, optimized server farmland fall checks (`MutableBlockPos` + `FARMLAND_CACHE`), and added early fast-path exit in `StandaloneHighlightRenderer`.
-- Filtered decorative/storage false positives in `PlantClassifier`, unified NeoForge `LiteMinerCompat` on reflection (removed `libs/liteminer.jar`), updated metadata to `Velorise`/`velorise2206`, and added multi-loader GitHub Actions CI.
+- Added claim protection across all mass farming actions.
+- Improved water irrigation algorithm to prevent spills on slopes and terraces.
+- Fixed stuck activation key detection and excluded non-tillable blocks.
+- Optimized 2x2 sapling planting and melon/pumpkin layout near water.
+- Enhanced performance with BFS chunk safety and fast-path rendering.
+- Cleaned metadata and added multi-loader GitHub Actions CI.
 
 ---
 

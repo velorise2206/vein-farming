@@ -27,8 +27,8 @@ This repository contains all official editions of Vein Farming:
 | Subfolder | Minecraft Version | Mod Loader | Java | Status | Release Artifact |
 | :--- | :---: | :---: | :---: | :---: | :--- |
 | [`neoforge-1.21.1/`](neoforge-1.21.1/) | **1.21.1** | NeoForge 21.1.65+ | Java 21 | Stable Release | `vein_farming-1.21.1-neoforge-2.0.3.jar` |
-| [`fabric-1.21.1/`](fabric-1.21.1/) | **1.21.1** | Fabric Loader 0.16.9+ | Java 21 | Stable Release | `vein_farming-fabric-1.21.1-2.0.3.jar` |
-| [`fabric-1.21.11/`](fabric-1.21.11/) | **1.21.11** | Fabric Loader 0.17.3+ | Java 21 | Stable Release | `vein_farming-fabric-1.21.11-2.0.3.jar` |
+| [`fabric-1.21.1/`](fabric-1.21.1/) | **1.21.1** | Fabric Loader 0.16.9+ | Java 21 | Stable Release | `vein_farming-1.21.1-fabric-2.0.3.jar` |
+| [`fabric-1.21.11/`](fabric-1.21.11/) | **1.21.11** | Fabric Loader 0.17.3+ | Java 21 | Stable Release | `vein_farming-1.21.11-fabric-2.0.3.jar` |
 | [`forge-1.20.1/`](forge-1.20.1/) | **1.20.1** | Forge 47.3.0+ | Java 17 | Stable Release | `vein_farming-1.20.1-forge-2.0.3.jar` |
 
 ---

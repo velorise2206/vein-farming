@@ -4,14 +4,16 @@ All notable changes to **Vein Farming** are documented in this file.
 
 ---
 
-## [2.0.3] — Claim Protection, Performance & Polish
+## [2.0.3] — Claim Protection, Performance & Cleanup
 
 - Enforced per-block claim protection (`BlockEvent.BreakEvent` / `PlayerBlockBreakEvents.BEFORE`) across mass harvest, destroy, planting, tilling, water-hole digging, and flower bone meal.
-- Added chunk-loaded guards (`level.hasChunkAt`) to all BFS scans to prevent synchronous chunk loading at chunk borders.
+- Added chunk-loaded guards (`level.isLoaded`) to all BFS scans to prevent synchronous chunk loading at chunk borders.
 - Optimized server farmland fall-cushion checks with `MutableBlockPos`, downward-velocity filtering, and cached `PlantClassifier.isFarmland`.
 - Added early fast-path exit in `StandaloneHighlightRenderer` when the activation key is not held.
+- Fixed stuck/false activation preview in Standalone mode by polling live GLFW key state (`ModKeyMappings.isKeyActive`), synced companion-key gating between client and server, and excluded non-tillable blocks (moss, mud, podzol, mycelium) from hoe preview.
 - Filtered decorative/storage false positives (crates, pots, lamps, logs, planks, carved pumpkins) and cached fallback lookups in `PlantClassifier`.
-- Unified NeoForge 1.21.1 `LiteMinerCompat` on reflection, removed bundled `libs/liteminer.jar`, updated mod metadata to Velorise/velorise2206, and added multi-loader GitHub Actions CI.
+- Upgraded Smart Water Bucket Irrigation (`PlantingAlgorithms.isWaterHoleContained`) to require solid enclosure on all 4 horizontal sides plus floor, preventing water holes from spilling off edges, slopes, or non-solid blocks.
+- Unified NeoForge 1.21.1 `LiteMinerCompat` on reflection, removed bundled `libs/liteminer.jar`, updated mod metadata to `Velorise`/`velorise2206`, and added multi-loader GitHub Actions CI.
 
 ---
 

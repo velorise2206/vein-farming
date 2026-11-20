@@ -30,9 +30,33 @@ import net.minecraftforge.event.level.BlockEvent;
 public class FarmingEventHandler {
 
     private static final ThreadLocal<Boolean> IS_HANDLING_BREAK = ThreadLocal.withInitial(() -> false);
-    private static final ThreadLocal<Boolean> IS_CHECKING_CLAIM = ThreadLocal.withInitial(() -> false);
     private static final ThreadLocal<Boolean> IS_HANDLING_RIGHT_CLICK = ThreadLocal.withInitial(() -> false);
     private static final java.util.Map<java.util.UUID, Long> LAST_RIGHT_CLICK_TICK = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Checks chunk loaded state, vanilla spawn protection, and mod claim protection (FTB Chunks, OPAC, etc.)
+     * by firing BlockEvent.BreakEvent with re-entrancy guard enabled.
+     */
+    public static boolean canModifyBlock(Player player, Level level, BlockPos pos) {
+        if (player == null || level == null || pos == null) {
+            return false;
+        }
+        if (!level.isLoaded(pos) || !level.mayInteract(player, pos)) {
+            return false;
+        }
+        if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
+            return true;
+        }
+        boolean prev = IS_HANDLING_BREAK.get();
+        IS_HANDLING_BREAK.set(true);
+        try {
+            BlockEvent.BreakEvent checkEvent = new BlockEvent.BreakEvent(level, pos, level.getBlockState(pos), serverPlayer);
+            return !net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(checkEvent);
+        } finally {
+            IS_HANDLING_BREAK.set(prev);
+        }
+    }
+
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onFarmlandTrample(BlockEvent.FarmlandTrampleEvent event) {
@@ -96,7 +120,7 @@ public class FarmingEventHandler {
             return;
         }
 
-        if (IS_CHECKING_CLAIM.get() || IS_HANDLING_BREAK.get()) {
+        if (IS_HANDLING_BREAK.get()) {
             return;
         }
 
@@ -312,32 +336,6 @@ public class FarmingEventHandler {
             VeinFarmingMod.LOGGER.error("Vein Farming: Error during right-click interaction handling", t);
         } finally {
             IS_HANDLING_RIGHT_CLICK.set(false);
-        }
-    }
-
-    public static boolean canModifyBlock(Player player, Level level, BlockPos pos) {
-        if (player == null || level == null || pos == null) {
-            return false;
-        }
-        if (level.isClientSide()) {
-            return true;
-        }
-        if (!level.mayInteract(player, pos)) {
-            return false;
-        }
-        if (IS_CHECKING_CLAIM.get()) {
-            return true;
-        }
-        try {
-            IS_CHECKING_CLAIM.set(true);
-            BlockState state = level.getBlockState(pos);
-            var event = new net.minecraftforge.event.level.BlockEvent.BreakEvent(level, pos, state, player);
-            net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
-            return !event.isCanceled();
-        } catch (Throwable t) {
-            return true;
-        } finally {
-            IS_CHECKING_CLAIM.set(false);
         }
     }
 

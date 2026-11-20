@@ -908,6 +908,40 @@ public class PlantingAlgorithms {
      *   - Rejects any candidate that would overlap with existing or planned water supply zones.
      *   - Preserves maximum farmland surface while guaranteeing full moisture coverage without dry gaps.
      */
+    /**
+     * Checks that a candidate water hole is safely enclosed on the bottom and all 4 horizontal sides
+     * so placed water cannot spill out onto edges, slopes, or non-solid blocks.
+     */
+    public static boolean isWaterHoleContained(Level level, BlockPos pos) {
+        if (level == null || pos == null || !level.isLoaded(pos)) {
+            return false;
+        }
+        BlockPos below = pos.below();
+        if (!level.isLoaded(below) || !level.getBlockState(below).isSolid()) {
+            return false;
+        }
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            BlockPos neighbor = pos.relative(dir);
+            if (!level.isLoaded(neighbor)) {
+                return false;
+            }
+            BlockState nState = level.getBlockState(neighbor);
+            if (nState.isAir()
+                    || nState.canBeReplaced()
+                    || !nState.blocksMotion()
+                    || !nState.getFluidState().isEmpty()
+                    || PlantClassifier.isFoliageOrPlant(nState)) {
+                return false;
+            }
+            if (!PlantClassifier.isFarmland(nState)
+                    && !nState.is(Blocks.DIRT_PATH)
+                    && !nState.isFaceSturdy(level, neighbor, dir.getOpposite())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static List<BlockPos> calculateOptimalWaterHoles(
             Level level,
             Collection<BlockPos> tilledPositions,
@@ -1027,7 +1061,7 @@ public class PlantingAlgorithms {
                 if (posState.isAir() || PlantClassifier.isFoliageOrPlant(posState)) {
                     continue;
                 }
-                if (!level.getBlockState(pos.below()).isSolid()) {
+                if (!isWaterHoleContained(level, pos)) {
                     continue;
                 }
                 if (isTooCloseToWater(pos, existingWorldWaters, minSpacing)) {
@@ -1057,7 +1091,7 @@ public class PlantingAlgorithms {
             if (posState.isAir() || PlantClassifier.isFoliageOrPlant(posState)) {
                 continue;
             }
-            if (!candidateSet.contains(pos) && level.getBlockState(pos.below()).isSolid()) {
+            if (!candidateSet.contains(pos) && isWaterHoleContained(level, pos)) {
                 if (!isTooCloseToWater(pos, existingWorldWaters, minSpacing)) {
                     fallbackCandidates.add(pos);
                 }
@@ -1152,7 +1186,17 @@ public class PlantingAlgorithms {
                 if (selectedHoleSet.contains(cand) || existingWorldWaterSet.contains(cand)) {
                     continue;
                 }
-                if (!level.getBlockState(cand.below()).isSolid()) {
+                if (!isWaterHoleContained(level, cand)) {
+                    continue;
+                }
+                boolean adjacentToSelectedHole = false;
+                for (Direction dir : Direction.Plane.HORIZONTAL) {
+                    if (selectedHoleSet.contains(cand.relative(dir))) {
+                        adjacentToSelectedHole = true;
+                        break;
+                    }
+                }
+                if (adjacentToSelectedHole) {
                     continue;
                 }
 

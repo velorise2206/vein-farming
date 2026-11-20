@@ -161,7 +161,7 @@ public class PlantingManager {
                     stackSafety++;
                 }
             }
-            if (!FarmingManager.canModifyBlock(player, level, above)) {
+            if (!FarmingEventHandler.canModifyBlock(player, level, above)) {
                 continue;
             }
             BlockState aboveState = level.getBlockState(above);
@@ -277,7 +277,7 @@ public class PlantingManager {
 
         for (BlockPos podPos : targetPodPositions) {
             if (plantedCount >= maxLimit) break;
-            if (!FarmingManager.canModifyBlock(player, level, podPos)) continue;
+            if (!FarmingEventHandler.canModifyBlock(player, level, podPos)) continue;
 
             BlockState currentAtPod = level.getBlockState(podPos);
             if (!currentAtPod.isAir() && !currentAtPod.canBeReplaced()) {
@@ -371,7 +371,7 @@ public class PlantingManager {
 
         while (!queue.isEmpty() && validPodSet.size() < maxLimit) {
             BlockPos logPos = queue.poll();
-            if (!level.hasChunkAt(logPos)) continue;
+            if (!level.isLoaded(logPos)) continue;
 
             for (Direction dir : Direction.Plane.HORIZONTAL) {
                 BlockPos podPos = logPos.relative(dir);
@@ -444,7 +444,7 @@ public class PlantingManager {
 
         while (!queue.isEmpty() && result.size() < maxLimit) {
             BlockPos current = queue.poll();
-            if (!level.hasChunkAt(current)) continue;
+            if (!level.isLoaded(current)) continue;
 
             // If space above is air or replaceable, add to result
             BlockPos above = current.above();

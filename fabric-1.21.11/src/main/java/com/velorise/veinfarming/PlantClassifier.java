@@ -71,8 +71,22 @@ public class PlantClassifier {
     private static final Map<Block, Boolean> SUPPORTED_2X2_CACHE = new ConcurrentHashMap<>();
     private static final Map<Block, Boolean> STRICT_2X2_CACHE = new ConcurrentHashMap<>();
     private static final Map<Block, Boolean> FARMLAND_CACHE = new ConcurrentHashMap<>();
-    private static final Map<Block, Boolean> PLANTABLE_SEED_FALLBACK_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Item, Boolean> PLANTABLE_SEED_FALLBACK_CACHE = new ConcurrentHashMap<>();
     private static final Map<Block, Boolean> FLOWER_FALLBACK_CACHE = new ConcurrentHashMap<>();
+
+    private static boolean isExcludedNonPlantId(String id) {
+        return id.contains("crate") || id.contains("_bag") || id.contains("sack")
+                || id.contains("flower_pot") || id.contains("_pot")
+                || id.contains("lamp") || id.contains("lantern")
+                || id.contains("_pie") || id.contains("_cake")
+                || id.contains("brick") || id.contains("plank")
+                || id.contains("_slab") || id.contains("_stairs")
+                || id.contains("_fence") || id.contains("_door") || id.contains("trapdoor")
+                || id.contains("_sign") || id.contains("_carpet")
+                || id.contains("_chest") || id.contains("_barrel")
+                || id.contains("carved_") || id.contains("jack_o_lantern")
+                || id.contains("stripped_") || id.contains("_wood") || id.contains("_log");
+    }
 
     /**
      * Universal check if an item stack is a plantable crop/seed.
@@ -99,11 +113,9 @@ public class PlantClassifier {
                     || block.defaultBlockState().is(BlockTags.FLOWERS)) {
                 return true;
             }
-            return PLANTABLE_SEED_FALLBACK_CACHE.computeIfAbsent(block, b -> {
-                String id = b.getDescriptionId().toLowerCase(Locale.ROOT);
-                if (isExcludedNonPlantId(id)) {
-                    return false;
-                }
+            return PLANTABLE_SEED_FALLBACK_CACHE.computeIfAbsent(item, it -> {
+                String id = block.getDescriptionId().toLowerCase(Locale.ROOT);
+                if (isExcludedNonPlantId(id)) return false;
                 return id.contains("bamboo") || id.contains("sapling") || id.contains("crop")
                         || id.contains("seed") || id.contains("flower") || id.contains("mushroom") || id.contains("fungus")
                         || id.contains("stem") || id.contains("melon") || id.contains("pumpkin");
@@ -167,11 +179,9 @@ public class PlantClassifier {
                     || b == Blocks.SHORT_GRASS || b == Blocks.TALL_GRASS) {
                 return true;
             }
-            return FLOWER_FALLBACK_CACHE.computeIfAbsent(b, block -> {
-                String id = block.getDescriptionId().toLowerCase(Locale.ROOT);
-                if (isExcludedNonPlantId(id)) {
-                    return false;
-                }
+            return FLOWER_FALLBACK_CACHE.computeIfAbsent(b, blk -> {
+                String id = blk.getDescriptionId().toLowerCase(Locale.ROOT);
+                if (isExcludedNonPlantId(id)) return false;
                 return id.contains("flower") || id.contains("fern") || id.contains("dead_bush") || id.contains("deadbush") || id.contains("shrub");
             });
         }
@@ -190,11 +200,9 @@ public class PlantClassifier {
                 || b == Blocks.SHORT_GRASS || b == Blocks.TALL_GRASS) {
             return true;
         }
-        return FLOWER_FALLBACK_CACHE.computeIfAbsent(b, block -> {
-            String id = block.getDescriptionId().toLowerCase(Locale.ROOT);
-            if (isExcludedNonPlantId(id)) {
-                return false;
-            }
+        return FLOWER_FALLBACK_CACHE.computeIfAbsent(b, blk -> {
+            String id = blk.getDescriptionId().toLowerCase(Locale.ROOT);
+            if (isExcludedNonPlantId(id)) return false;
             return id.contains("flower") || id.contains("fern") || id.contains("dead_bush") || id.contains("deadbush") || id.contains("shrub");
         });
     }
@@ -875,14 +883,6 @@ public class PlantClassifier {
         }
         String id = state.getBlock().getDescriptionId().toLowerCase(Locale.ROOT);
         return id.contains("short_grass") || id.contains("tall_grass") || id.contains("fern") || id.contains("flower");
-    }
-
-    public static boolean isExcludedNonPlantId(String id) {
-        if (id == null) return true;
-        return id.contains("crate") || id.contains("_bag") || id.contains("flower_pot") || id.contains("pot")
-                || id.contains("lamp") || id.contains("_pie") || id.contains("plank") || id.contains("_slab")
-                || id.contains("carved_") || id.contains("_wood") || id.contains("_log") || id.contains("sign")
-                || id.contains("door") || id.contains("fence") || id.contains("stairs") || id.contains("wall");
     }
 
     public static boolean isHarvestablePlant(BlockState state) {

@@ -85,7 +85,7 @@ public class TillingAndFertilizingManager {
             List<BlockPos> waterHoles = PlantingAlgorithms.calculateOptimalWaterHoles(level, sorted, targetSoilPos, availableWater);
             if (!waterHoles.isEmpty()) {
                 for (BlockPos holePos : waterHoles) {
-                    if (!FarmingManager.canModifyBlock(player, level, holePos)) {
+                    if (!FarmingEventHandler.canModifyBlock(player, level, holePos)) {
                         continue;
                     }
                     if (consumeOneWaterSource(player)) {
@@ -125,7 +125,7 @@ public class TillingAndFertilizingManager {
             if (tilledCount >= maxLimit) {
                 break;
             }
-            if (!FarmingManager.canModifyBlock(player, level, pos)) {
+            if (!FarmingEventHandler.canModifyBlock(player, level, pos)) {
                 continue;
             }
 
@@ -274,7 +274,7 @@ public class TillingAndFertilizingManager {
                 if (!player.isCreative() && player.getItemInHand(hand).isEmpty()) {
                     break;
                 }
-                if (!FarmingManager.canModifyBlock(player, level, pos)) {
+                if (!FarmingEventHandler.canModifyBlock(player, level, pos)) {
                     continue;
                 }
 
@@ -384,7 +384,7 @@ public class TillingAndFertilizingManager {
             }
 
             BlockPos targetPos = originPos.offset(dx, dy, dz);
-            if (!FarmingManager.canModifyBlock(player, level, targetPos)) {
+            if (!FarmingEventHandler.canModifyBlock(player, level, targetPos)) {
                 continue;
             }
             BlockState targetState = level.getBlockState(targetPos);
@@ -441,7 +441,7 @@ public class TillingAndFertilizingManager {
 
         while (!queue.isEmpty() && result.size() < maxLimit) {
             BlockPos current = queue.poll();
-            if (!level.hasChunkAt(current)) continue;
+            if (!level.isLoaded(current)) continue;
             result.add(current);
 
             for (int dx = -1; dx <= 1; dx++) {
@@ -491,10 +491,10 @@ public class TillingAndFertilizingManager {
         if (getTilledState(state) != null) {
             return true;
         }
-        if (state.is(BlockTags.DIRT)) {
-            return true;
-        }
         String id = state.getBlock().getDescriptionId().toLowerCase(Locale.ROOT);
+        if (id.contains("podzol") || id.contains("mycelium") || id.contains("moss") || id.contains("mud")) {
+            return false;
+        }
         return id.contains("dirt") || id.contains("grass_block") || id.contains("soil");
     }
 
@@ -541,7 +541,7 @@ public class TillingAndFertilizingManager {
 
         while (!queue.isEmpty() && result.size() < maxLimit) {
             BlockPos current = queue.poll();
-            if (!level.hasChunkAt(current)) continue;
+            if (!level.isLoaded(current)) continue;
 
             BlockState curState = level.getBlockState(current);
             BlockPos candidateCrop = current;

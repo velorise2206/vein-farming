@@ -104,13 +104,18 @@ public class StandaloneHighlightRenderer {
 
     public static boolean isClientVeinActive(Player player) {
         if (player == null) return false;
-        if (LiteMinerCompat.isLiteMinerLoaded() && LiteMinerCompat.isLiteMinerClientActive()) {
+        boolean liteLoaded = LiteMinerCompat.isLiteMinerLoaded();
+        boolean ftbLoaded = FTBUltimineCompat.isFTBUltimineLoaded();
+        if (liteLoaded && LiteMinerCompat.isLiteMinerClientActive()) {
             return true;
         }
-        if (FTBUltimineCompat.isFTBUltimineLoaded() && FTBUltimineCompat.isUltimineClientActive()) {
+        if (ftbLoaded && FTBUltimineCompat.isUltimineClientActive()) {
             return true;
         }
-        return ModKeyMappings.isKeyActive();
+        if (!liteLoaded && !ftbLoaded) {
+            return ModKeyMappings.isKeyActive();
+        }
+        return false;
     }
 
     public static boolean isFarmingAction(Level level, Player player, BlockPos clickedPos, BlockState clickedState, ItemStack heldItem, ItemStack offItem) {
@@ -188,6 +193,12 @@ public class StandaloneHighlightRenderer {
         Player player = mc.player;
         Level level = mc.level;
         if (player == null || level == null) {
+            clearCache();
+            return;
+        }
+
+        // Fast-path exit when vein key is not held to avoid per-frame block/item checks
+        if (!isClientVeinActive(player)) {
             clearCache();
             return;
         }

@@ -99,7 +99,7 @@ public class HarvestManager {
             if (harvestedCount >= maxLimit) {
                 break;
             }
-            if (!FarmingManager.canModifyBlock(player, serverLevel, pos)) {
+            if (!FarmingEventHandler.canModifyBlock(player, serverLevel, pos)) {
                 continue;
             }
 
@@ -546,7 +546,7 @@ public class HarvestManager {
             if (destroyedCount >= maxLimit) {
                 break;
             }
-            if (!FarmingManager.canModifyBlock(player, serverLevel, pos)) {
+            if (!FarmingEventHandler.canModifyBlock(player, serverLevel, pos)) {
                 continue;
             }
 
@@ -653,7 +653,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 BlockState currState = level.getBlockState(curr);
                 if (PlantClassifier.isRiceCrop(currState) && !result.contains(curr)) {
                     result.add(curr);
@@ -698,7 +698,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos currentRoot = queue.poll();
-                if (!level.hasChunkAt(currentRoot)) continue;
+                if (!level.isLoaded(currentRoot)) continue;
                 BlockState rootState = level.getBlockState(currentRoot);
 
                 // For mass destruction, collect the root itself!
@@ -747,7 +747,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 result.add(curr);
 
                 for (int dx = -1; dx <= 1; dx++) {
@@ -781,7 +781,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 result.add(curr);
 
                 for (int dx = -1; dx <= 1; dx++) {
@@ -817,7 +817,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && (flowers.size() + plants.size()) < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 BlockState currState = level.getBlockState(curr);
                 if (currState.is(Blocks.CHORUS_FLOWER)) {
                     flowers.add(curr);
@@ -858,7 +858,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 result.add(curr);
 
                 BlockState currState = level.getBlockState(curr);
@@ -900,7 +900,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 result.add(curr);
 
                 for (int dx = -1; dx <= 1; dx++) {
@@ -934,7 +934,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 if (level.getBlockState(curr).getBlock() instanceof CocoaBlock) {
                     if (!result.contains(curr)) {
                         result.add(curr);
@@ -976,7 +976,7 @@ public class HarvestManager {
 
         while (!queue.isEmpty() && result.size() < maxLimit) {
             BlockPos current = queue.poll();
-            if (!level.hasChunkAt(current)) continue;
+            if (!level.isLoaded(current)) continue;
             BlockState curState = level.getBlockState(current);
 
             BlockPos cropPos = current;
@@ -1062,7 +1062,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && (flowers.size() + plants.size()) < maxLimit) {
                 BlockPos curr = queue.poll();
-                if (!level.hasChunkAt(curr)) continue;
+                if (!level.isLoaded(curr)) continue;
                 BlockState s = level.getBlockState(curr);
                 if (s.is(Blocks.CHORUS_FLOWER)) {
                     flowers.add(curr);
@@ -1102,7 +1102,7 @@ public class HarvestManager {
 
             while (!queue.isEmpty() && result.size() < maxLimit) {
                 BlockPos currentRoot = queue.poll();
-                if (!level.hasChunkAt(currentRoot)) continue;
+                if (!level.isLoaded(currentRoot)) continue;
 
                 // Add stalks strictly ABOVE currentRoot to result (protecting root)
                 BlockPos stalk = currentRoot.above();
@@ -1147,7 +1147,7 @@ public class HarvestManager {
 
         while (!queue.isEmpty() && result.size() < maxLimit) {
             BlockPos current = queue.poll();
-            if (!level.hasChunkAt(current)) continue;
+            if (!level.isLoaded(current)) continue;
 
             BlockState curState = level.getBlockState(current);
             if (targetFruit) {

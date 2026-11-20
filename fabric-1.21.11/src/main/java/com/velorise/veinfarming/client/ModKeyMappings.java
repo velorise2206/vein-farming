@@ -1,7 +1,7 @@
 package com.velorise.veinfarming.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.velorise.veinfarming.FarmingConfig;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
@@ -37,15 +37,32 @@ public final class ModKeyMappings {
         smartPlantEnabled = enabled;
     }
 
-    public static boolean isKeyActive() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) {
+    private static boolean isKeyPhysicallyDown(Minecraft mc, KeyMapping mapping) {
+        if (mapping == null || mapping.isUnbound()) {
             return false;
         }
-        return KEY_ACTIVATE.isDown() || mc.options.keyShift.isDown();
+        InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(mapping);
+        long window = mc.getWindow().handle();
+        if (key.getType() == InputConstants.Type.KEYSYM) {
+            return GLFW.glfwGetKey(window, key.getValue()) == GLFW.GLFW_PRESS;
+        }
+        if (key.getType() == InputConstants.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
+        }
+        return mapping.isDown();
+    }
+
+    public static boolean isKeyActive() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.screen != null) {
+            return false;
+        }
+        if (!KEY_ACTIVATE.isUnbound()) {
+            return isKeyPhysicallyDown(mc, KEY_ACTIVATE);
+        }
+        return isKeyPhysicallyDown(mc, mc.options.keyShift);
     }
 
     private ModKeyMappings() {
     }
 }
-

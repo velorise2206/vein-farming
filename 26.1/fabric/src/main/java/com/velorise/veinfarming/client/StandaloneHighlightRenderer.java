@@ -3,9 +3,9 @@ package com.velorise.veinfarming.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.velorise.veinfarming.*;
-import net.minecraft.client.Camera;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import net.minecraft.core.BlockPos;
@@ -20,11 +20,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +37,20 @@ import java.util.Map;
 import java.util.Set;
 
 public class StandaloneHighlightRenderer {
+
+    private record ColoredBox(
+            float minX, float minY, float minZ,
+            float maxX, float maxY, float maxZ,
+            float r, float g, float b, float a
+    ) {
+        static ColoredBox from(AABB box, float r, float g, float b, float a) {
+            return new ColoredBox(
+                    (float) box.minX, (float) box.minY, (float) box.minZ,
+                    (float) box.maxX, (float) box.maxY, (float) box.maxZ,
+                    r, g, b, a
+            );
+        }
+    }
 
     private BlockPos lastClickedPos = null;
     private BlockState lastClickedState = null;
@@ -96,8 +110,6 @@ public class StandaloneHighlightRenderer {
         ItemStack heldItem = player.getMainHandItem();
         ItemStack offItem = player.getOffhandItem();
         if (isFarmingAction(level, player, clickedPos, clickedState, heldItem, offItem)) {
-            // Cancel vanilla block highlight AND suppress companion mod basic wireframes
-            // so Vein Farming's rich preview and ghost models can render cleanly without visual collision!
             return false;
         }
         return true;
@@ -181,7 +193,6 @@ public class StandaloneHighlightRenderer {
     }
 
     public void handleRenderWorld(LevelRenderContext context) {
-
         if (!FarmingConfig.STANDALONE_PREVIEW.get()) {
             return;
         }
@@ -194,7 +205,6 @@ public class StandaloneHighlightRenderer {
             return;
         }
 
-        // Fast-path exit when vein key is not held to avoid per-frame block/item checks
         if (!isClientVeinActive(player)) {
             clearCache();
             return;
@@ -229,14 +239,11 @@ public class StandaloneHighlightRenderer {
         boolean isCompanionLoaded = LiteMinerCompat.isLiteMinerLoaded() || FTBUltimineCompat.isFTBUltimineLoaded();
         boolean farmingAction = isFarmingAction(level, player, clickedPos, clickedState, heldItem, offItem);
 
-        // When a companion mod is loaded, we ONLY override agricultural actions (planting, saplings, crops, tilling, harvest).
-        // Non-farming actions (mining stone, cutting trees with axe) are left to LiteMiner / FTB Ultimine.
         if (isCompanionLoaded && !farmingAction) {
             clearCache();
             return;
         }
 
-        // Check if cached search result is still valid (throttle search to at most once per 250ms when looking at same block)
         long now = System.currentTimeMillis();
         boolean isAttacking = mc.options.keyAttack.isDown();
         boolean cacheValid = lastClickedPos != null
@@ -266,7 +273,7 @@ public class StandaloneHighlightRenderer {
         } else {
             previewBlocks = Collections.emptyList();
             plannedWaterHoles = Collections.emptyList();
-            r = 1.0f; g = 0.82f; b = 0.2f; a = 0.8f; // Default golden harvest
+            r = 1.0f; g = 0.82f; b = 0.2f; a = 0.8f;
             isPlanting = false;
             isHoe = false;
             ghostPlantState = null;
@@ -298,7 +305,6 @@ public class StandaloneHighlightRenderer {
             boolean isTool = FarmingManager.isDestructionTool(heldItem);
 
             if (isPlant && (isAttacking || isTool || !isHarvestable)) {
-                // DESTROY PREVIEW (Left-click / Breaking Mode) - Vivid Crimson Red
                 Collection<BlockPos> companionBlocks = Collections.emptyList();
                 if (isCompanionLoaded) {
                     companionBlocks = FarmingManager.getClientSelectedPositions(level, player, targetCrop);
@@ -316,7 +322,6 @@ public class StandaloneHighlightRenderer {
                 }
                 r = 1.0f; g = 0.22f; b = 0.22f; a = 0.85f;
             } else if (isHarvestable) {
-                // HARVEST PREVIEW (Right-click Harvest Mode) - Golden Autumn Harvest
                 Collection<BlockPos> companionBlocks = Collections.emptyList();
                 if (isCompanionLoaded) {
                     companionBlocks = FarmingManager.getClientSelectedPositions(level, player, targetCrop);
@@ -336,7 +341,7 @@ public class StandaloneHighlightRenderer {
                 r = 1.0f; g = 0.82f; b = 0.2f; a = 0.8f;
             } else if (clickedState.is(Blocks.COMPOSTER) && FarmingConfig.BATCH_COMPOSTER.get() && FarmingManager.isCompostable(heldItem)) {
                 previewBlocks = Collections.singletonList(clickedPos);
-                r = 0.45f; g = 0.75f; b = 0.25f; // Compost Green
+                r = 0.45f; g = 0.75f; b = 0.25f;
             } else if (FarmingEventHandler.isHoe(heldItem) && FarmingManager.isTillable(level, player, hand, targetHoePos)) {
                 Collection<BlockPos> companionBlocks = Collections.emptyList();
                 if (isCompanionLoaded) {
@@ -354,7 +359,7 @@ public class StandaloneHighlightRenderer {
                 } else {
                     previewBlocks = FarmingManager.fallbackHoeSearch(player, hand, targetHoePos);
                 }
-                r = 0.65f; g = 0.45f; b = 0.25f; // Earth Farmland Brown
+                r = 0.65f; g = 0.45f; b = 0.25f;
                 isHoe = true;
                 if (PlantClassifier.isWaterContainer(offItem) && FarmingConfig.SMART_WATER_BUCKET_IRRIGATION.get() && previewBlocks.size() >= 2) {
                     int availableWater = FarmingManager.getAvailableWaterCount(player);
@@ -379,7 +384,7 @@ public class StandaloneHighlightRenderer {
                 } else {
                     previewBlocks = PlantingManager.fallbackPlantingSearch(level, clickedPos, activeSeed, ModKeyMappings.isSmartPlantEnabled());
                 }
-                r = 0.4f; g = 0.85f; b = 0.3f; // Sprout Green
+                r = 0.4f; g = 0.85f; b = 0.3f;
                 isPlanting = true;
                 if (FarmingConfig.GHOST_PLANT_PREVIEW.get()) {
                     ghostPlantState = getPlantedBlockState(activeSeed);
@@ -418,14 +423,13 @@ public class StandaloneHighlightRenderer {
                         previewBlocks = FarmingManager.fallbackCropSearch(level, clickedPos);
                     }
                     if (FarmingManager.isSmallFlower(clickedState)) {
-                        r = 0.95f; g = 0.55f; b = 0.85f; // Flora Blossom Pink
+                        r = 0.95f; g = 0.55f; b = 0.85f;
                     } else {
-                        r = 0.3f; g = 0.9f; b = 0.4f; // Emerald Jade
+                        r = 0.3f; g = 0.9f; b = 0.4f;
                     }
                 }
             }
 
-            // Update cache
             lastClickedPos = clickedPos;
             lastClickedState = clickedState;
             lastHeldItem = heldItem.copy();
@@ -445,16 +449,15 @@ public class StandaloneHighlightRenderer {
             return;
         }
 
-        PoseStack poseStack = context.poseStack();
-        if (poseStack == null) {
+        SubmitNodeCollector submitNodeCollector = context.submitNodeCollector();
+        if (submitNodeCollector == null) {
             return;
         }
-        Camera camera = mc.gameRenderer.getMainCamera();
-        Vec3 camPos = camera.position();
-        MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
-        VertexConsumer consumer = bufferSource.getBuffer(RenderTypes.lines());
 
-        poseStack.pushPose();
+        PoseStack poseStack = context.poseStack() != null ? context.poseStack() : new PoseStack();
+        Vec3 camPos = (context.levelState() != null && context.levelState().cameraRenderState != null)
+                ? context.levelState().cameraRenderState.pos
+                : mc.gameRenderer.getMainCamera().position();
 
         Map<BlockPos, Block> plannedIntercrop = null;
         if (isPlanting && ghostOffState != null && ModKeyMappings.isSmartPlantEnabled()) {
@@ -472,61 +475,60 @@ public class StandaloneHighlightRenderer {
             }
         }
 
-        float lineAlpha = ((isPlanting && ghostPlantState != null) || (isHoe && FarmingConfig.GHOST_FARMLAND_PREVIEW.get())) ? 0.35f : a;
+        List<ColoredBox> lineBoxes = new ArrayList<>(previewBlocks.size());
+        List<ColoredBox> filledBoxes = new ArrayList<>();
+
+        float lineAlpha = ((isPlanting && ghostPlantState != null) || (isHoe && FarmingConfig.GHOST_FARMLAND_PREVIEW.get())) ? 0.45f : a;
         boolean isCocoaPlanting = isPlanting && FarmingManager.isCocoaBean(activeSeed);
         Set<BlockPos> waterHoleSet = plannedWaterHoles.isEmpty() ? Collections.emptySet() : new HashSet<>(plannedWaterHoles);
+
         for (BlockPos pos : previewBlocks) {
             BlockPos renderPos = (isPlanting && !isCocoaPlanting) ? pos.above() : pos;
-            net.minecraft.world.phys.AABB aabb;
+            AABB aabb;
             if (isPlanting) {
-                aabb = new net.minecraft.world.phys.AABB(renderPos);
+                aabb = new AABB(renderPos);
             } else {
                 BlockState state = level.getBlockState(renderPos);
                 VoxelShape shape = state.getShape(level, renderPos);
                 aabb = shape.isEmpty()
-                        ? new net.minecraft.world.phys.AABB(renderPos)
+                        ? new AABB(renderPos)
                         : shape.bounds().move(renderPos);
             }
-            net.minecraft.world.phys.AABB camRelative = aabb.move(-camPos.x, -camPos.y, -camPos.z);
+            AABB camRelative = aabb.move(-camPos.x, -camPos.y, -camPos.z);
 
             float boxR = r, boxG = g, boxB = b;
             float currentAlpha = lineAlpha;
             if (isHoe && FarmingConfig.SMART_IRRIGATION_PREVIEW.get()) {
                 if (waterHoleSet.contains(pos)) {
-                    boxR = 0.15f; boxG = 0.65f; boxB = 1.0f; // Azure Water Blue
+                    boxR = 0.15f; boxG = 0.65f; boxB = 1.0f;
                     currentAlpha = 0.85f;
                 } else {
                     boolean hasWater = FarmingManager.isNearWater(level, pos) || FarmingManager.isHydratedByHoles(pos, plannedWaterHoles);
                     if (hasWater) {
-                        boxR = 0.45f; boxG = 0.65f; boxB = 0.35f; // Hydrated Farmland Green-Brown
-                        currentAlpha = 0.40f;
+                        boxR = 0.45f; boxG = 0.65f; boxB = 0.35f;
+                        currentAlpha = 0.45f;
                     } else {
-                        boxR = 0.95f; boxG = 0.45f; boxB = 0.15f; // Warning Dry Amber/Orange
-                        currentAlpha = 0.65f;
+                        boxR = 0.95f; boxG = 0.45f; boxB = 0.15f;
+                        currentAlpha = 0.70f;
                     }
                 }
             } else if (isPlanting && plannedIntercrop != null && FarmingConfig.GROWTH_PENALTY_WARNING.get()) {
                 Block plannedCrop = plannedIntercrop.get(renderPos);
                 boolean hasPenalty = FarmingManager.hasGrowthPenalty(level, renderPos, plannedCrop, plannedIntercrop);
                 if (hasPenalty) {
-                    boxR = 1.0f; boxG = 0.28f; boxB = 0.2f; // Warning Coral Crimson
+                    boxR = 1.0f; boxG = 0.28f; boxB = 0.2f;
                     currentAlpha = 0.85f;
                 } else {
-                    boxR = 0.35f; boxG = 0.85f; boxB = 0.3f; // Full 200% growth speed Sprout Green
-                    currentAlpha = 0.35f;
+                    boxR = 0.35f; boxG = 0.85f; boxB = 0.3f;
+                    currentAlpha = 0.45f;
                 }
             }
 
-            renderLineBox(poseStack, consumer, camRelative, boxR, boxG, boxB, currentAlpha);
+            lineBoxes.add(ColoredBox.from(camRelative, boxR, boxG, boxB, currentAlpha));
         }
 
-        poseStack.popPose();
-        bufferSource.endBatch(RenderTypes.lines());
-
-        // Render translucent 3D ghost preview for Farmland (and planned Water Holes) when holding a hoe
-        if (isHoe && FarmingConfig.GHOST_FARMLAND_PREVIEW.get() && !previewBlocks.isEmpty()) {
-            VertexConsumer quadConsumer = bufferSource.getBuffer(RenderTypes.debugQuads());
-            poseStack.pushPose();
+        // Translucent 3D ghost preview for Farmland (and planned Water Holes) when holding a hoe
+        if (isHoe && FarmingConfig.GHOST_FARMLAND_PREVIEW.get()) {
             for (BlockPos pos : previewBlocks) {
                 BlockState targetState = level.getBlockState(pos);
                 VoxelShape shape = targetState.getShape(level, pos);
@@ -534,32 +536,29 @@ public class StandaloneHighlightRenderer {
 
                 if (waterHoleSet.contains(pos)) {
                     double topY = pos.getY() + blockTop + 0.003;
-                    net.minecraft.world.phys.AABB waterBox = new net.minecraft.world.phys.AABB(
+                    AABB waterBox = new AABB(
                             pos.getX() - 0.001, pos.getY(), pos.getZ() - 0.001,
                             pos.getX() + 1.001, topY, pos.getZ() + 1.001
                     ).move(-camPos.x, -camPos.y, -camPos.z);
-                    renderFilledBox(poseStack, quadConsumer, waterBox, 0.15f, 0.65f, 1.0f, 0.40f);
+                    filledBoxes.add(ColoredBox.from(waterBox, 0.15f, 0.65f, 1.0f, 0.40f));
                 } else {
                     boolean hasWater = FarmingManager.isNearWater(level, pos) || FarmingManager.isHydratedByHoles(pos, plannedWaterHoles);
                     double topY = pos.getY() + blockTop + 0.003;
-                    net.minecraft.world.phys.AABB farmlandBox = new net.minecraft.world.phys.AABB(
+                    AABB farmlandBox = new AABB(
                             pos.getX() - 0.001, topY - 0.9375, pos.getZ() - 0.001,
                             pos.getX() + 1.001, topY, pos.getZ() + 1.001
                     ).move(-camPos.x, -camPos.y, -camPos.z);
                     if (hasWater) {
-                        renderFilledBox(poseStack, quadConsumer, farmlandBox, 0.30f, 0.20f, 0.12f, 0.38f);
+                        filledBoxes.add(ColoredBox.from(farmlandBox, 0.30f, 0.20f, 0.12f, 0.38f));
                     } else {
-                        renderFilledBox(poseStack, quadConsumer, farmlandBox, 0.60f, 0.40f, 0.22f, 0.30f);
+                        filledBoxes.add(ColoredBox.from(farmlandBox, 0.60f, 0.40f, 0.22f, 0.30f));
                     }
                 }
             }
-            poseStack.popPose();
-            bufferSource.endBatch(RenderTypes.debugQuads());
         }
 
-        // Render translucent 3D ghost preview for planted crops/saplings
-        if (ghostPlantState != null && !previewBlocks.isEmpty()) {
-            VertexConsumer quadConsumer = bufferSource.getBuffer(RenderTypes.debugQuads());
+        // Translucent 3D ghost preview for planted crops/saplings
+        if (ghostPlantState != null) {
             BlockPos originSoilPos = FarmingManager.isValidSoilForSeed(activeSeed, clickedState, level, clickedPos) ? clickedPos : clickedPos.below();
             Block mainCropBlock = FarmingManager.getCropBlock(activeSeed);
             Block offCropBlock = FarmingManager.getCropBlock(offItem);
@@ -569,7 +568,6 @@ public class StandaloneHighlightRenderer {
                 evenIsMain = FarmingManager.determineIntercropPhase(level, originSoilPos, player.getDirection(), mainCropBlock, offCropBlock);
             }
             boolean alternateOnX = (player.getDirection().getAxis() == Direction.Axis.Z);
-            poseStack.pushPose();
             for (BlockPos pos : previewBlocks) {
                 boolean isMainRow = true;
                 if (!isCocoaPlanting && ghostOffState != null) {
@@ -577,22 +575,20 @@ public class StandaloneHighlightRenderer {
                     isMainRow = (Math.floorMod(rowCoord, 2) == 0) ? evenIsMain : !evenIsMain;
                 }
                 BlockPos plantPos = isCocoaPlanting ? pos : pos.above();
-                net.minecraft.world.phys.AABB plantBox = new net.minecraft.world.phys.AABB(
+                AABB plantBox = new AABB(
                         plantPos.getX() + 0.15, plantPos.getY() + 0.02, plantPos.getZ() + 0.15,
                         plantPos.getX() + 0.85, plantPos.getY() + 0.65, plantPos.getZ() + 0.85
                 ).move(-camPos.x, -camPos.y, -camPos.z);
                 if (isMainRow) {
-                    renderFilledBox(poseStack, quadConsumer, plantBox, 0.35f, 0.85f, 0.30f, 0.28f);
+                    filledBoxes.add(ColoredBox.from(plantBox, 0.35f, 0.85f, 0.30f, 0.28f));
                 } else {
-                    renderFilledBox(poseStack, quadConsumer, plantBox, 0.90f, 0.80f, 0.25f, 0.28f);
+                    filledBoxes.add(ColoredBox.from(plantBox, 0.90f, 0.80f, 0.25f, 0.28f));
                 }
             }
-            poseStack.popPose();
-            bufferSource.endBatch(RenderTypes.debugQuads());
         }
 
-        // Render translucent 3D ghost fruits (Melon / Pumpkin) on the reserved fruit spots
-        if (isPlanting && FarmingManager.isFruitSeed(activeSeed) && !previewBlocks.isEmpty()) {
+        // Translucent 3D ghost fruits (Melon / Pumpkin) on the reserved fruit spots
+        if (isPlanting && FarmingManager.isFruitSeed(activeSeed)) {
             Block fruitBlock = FarmingManager.getFruitForSeed(activeSeed);
             if (fruitBlock != null) {
                 Set<BlockPos> fruitSpots = new HashSet<>();
@@ -615,23 +611,36 @@ public class StandaloneHighlightRenderer {
                 }
 
                 if (!fruitSpots.isEmpty()) {
-                    VertexConsumer quadConsumer = bufferSource.getBuffer(RenderTypes.debugQuads());
                     boolean isMelon = fruitBlock == Blocks.MELON;
                     float fr = isMelon ? 0.50f : 0.90f;
                     float fg = isMelon ? 0.80f : 0.52f;
                     float fb = isMelon ? 0.25f : 0.15f;
-                    poseStack.pushPose();
                     for (BlockPos fruitPos : fruitSpots) {
-                        net.minecraft.world.phys.AABB fruitBox = new net.minecraft.world.phys.AABB(
+                        AABB fruitBox = new AABB(
                                 fruitPos.getX() + 0.05, fruitPos.getY() + 0.05, fruitPos.getZ() + 0.05,
                                 fruitPos.getX() + 0.95, fruitPos.getY() + 0.95, fruitPos.getZ() + 0.95
                         ).move(-camPos.x, -camPos.y, -camPos.z);
-                        renderFilledBox(poseStack, quadConsumer, fruitBox, fr, fg, fb, 0.28f);
+                        filledBoxes.add(ColoredBox.from(fruitBox, fr, fg, fb, 0.28f));
                     }
-                    poseStack.popPose();
-                    bufferSource.endBatch(RenderTypes.debugQuads());
                 }
             }
+        }
+
+        // Submit wireframes and translucent ghost boxes through Minecraft 26.1's SubmitNodeCollector pipeline
+        if (!lineBoxes.isEmpty()) {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, consumer) -> {
+                for (ColoredBox box : lineBoxes) {
+                    renderLineBox(pose, consumer, box);
+                }
+            });
+        }
+
+        if (!filledBoxes.isEmpty()) {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.debugQuads(), (pose, quadConsumer) -> {
+                for (ColoredBox box : filledBoxes) {
+                    renderFilledBox(pose, quadConsumer, box);
+                }
+            });
         }
     }
 
@@ -676,35 +685,31 @@ public class StandaloneHighlightRenderer {
         return null;
     }
 
-    private static void renderLineBox(PoseStack poseStack, VertexConsumer consumer, net.minecraft.world.phys.AABB box, float r, float g, float b, float a) {
-        org.joml.Matrix4f matrix = poseStack.last().pose();
-        float minX = (float) box.minX;
-        float minY = (float) box.minY;
-        float minZ = (float) box.minZ;
-        float maxX = (float) box.maxX;
-        float maxY = (float) box.maxY;
-        float maxZ = (float) box.maxZ;
+    private static void renderLineBox(PoseStack.Pose pose, VertexConsumer consumer, ColoredBox box) {
+        float minX = box.minX(), minY = box.minY(), minZ = box.minZ();
+        float maxX = box.maxX(), maxY = box.maxY(), maxZ = box.maxZ();
+        float r = box.r(), g = box.g(), b = box.b(), a = box.a();
 
         // Bottom 4 edges
-        drawBoxLine(consumer, matrix, minX, minY, minZ, maxX, minY, minZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, minX, minY, minZ, minX, minY, maxZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, maxX, minY, minZ, maxX, minY, maxZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, minX, minY, maxZ, maxX, minY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, minY, minZ, maxX, minY, minZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, minY, minZ, minX, minY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, maxX, minY, minZ, maxX, minY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, minY, maxZ, maxX, minY, maxZ, r, g, b, a);
 
         // Top 4 edges
-        drawBoxLine(consumer, matrix, minX, maxY, minZ, maxX, maxY, minZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, minX, maxY, minZ, minX, maxY, maxZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, maxX, maxY, minZ, maxX, maxY, maxZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, minX, maxY, maxZ, maxX, maxY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, maxY, minZ, maxX, maxY, minZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, maxY, minZ, minX, maxY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, maxX, maxY, minZ, maxX, maxY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, maxY, maxZ, maxX, maxY, maxZ, r, g, b, a);
 
         // 4 Vertical edges
-        drawBoxLine(consumer, matrix, minX, minY, minZ, minX, maxY, minZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, maxX, minY, minZ, maxX, maxY, minZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, minX, minY, maxZ, minX, maxY, maxZ, r, g, b, a);
-        drawBoxLine(consumer, matrix, maxX, minY, maxZ, maxX, maxY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, minY, minZ, minX, maxY, minZ, r, g, b, a);
+        drawBoxLine(consumer, pose, maxX, minY, minZ, maxX, maxY, minZ, r, g, b, a);
+        drawBoxLine(consumer, pose, minX, minY, maxZ, minX, maxY, maxZ, r, g, b, a);
+        drawBoxLine(consumer, pose, maxX, minY, maxZ, maxX, maxY, maxZ, r, g, b, a);
     }
 
-    private static void drawBoxLine(VertexConsumer consumer, org.joml.Matrix4f matrix,
+    private static void drawBoxLine(VertexConsumer consumer, PoseStack.Pose pose,
                                     float x1, float y1, float z1, float x2, float y2, float z2,
                                     float r, float g, float b, float a) {
         float dx = x2 - x1;
@@ -716,54 +721,49 @@ public class StandaloneHighlightRenderer {
         } else {
             dx /= len; dy /= len; dz /= len;
         }
-        consumer.addVertex(matrix, x1, y1, z1).setColor(r, g, b, a).setNormal(dx, dy, dz).setLineWidth(1.0F);
-        consumer.addVertex(matrix, x2, y2, z2).setColor(r, g, b, a).setNormal(dx, dy, dz).setLineWidth(1.0F);
+        consumer.addVertex(pose, x1, y1, z1).setColor(r, g, b, a).setNormal(pose, dx, dy, dz).setLineWidth(2.0F);
+        consumer.addVertex(pose, x2, y2, z2).setColor(r, g, b, a).setNormal(pose, dx, dy, dz).setLineWidth(2.0F);
     }
 
-    private static void renderFilledBox(PoseStack poseStack, VertexConsumer consumer, net.minecraft.world.phys.AABB box,
-                                        float r, float g, float b, float a) {
-        org.joml.Matrix4f matrix = poseStack.last().pose();
-        float minX = (float) box.minX;
-        float minY = (float) box.minY;
-        float minZ = (float) box.minZ;
-        float maxX = (float) box.maxX;
-        float maxY = (float) box.maxY;
-        float maxZ = (float) box.maxZ;
+    private static void renderFilledBox(PoseStack.Pose pose, VertexConsumer consumer, ColoredBox box) {
+        float minX = box.minX(), minY = box.minY(), minZ = box.minZ();
+        float maxX = box.maxX(), maxY = box.maxY(), maxZ = box.maxZ();
+        float r = box.r(), g = box.g(), b = box.b(), a = box.a();
 
-        // Bottom (Y-)
-        consumer.addVertex(matrix, minX, minY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, minY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, minY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, minX, minY, maxZ).setColor(r, g, b, a);
+        // Front face (Z+)
+        consumer.addVertex(pose, minX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, maxY, maxZ).setColor(r, g, b, a);
 
-        // Top (Y+)
-        consumer.addVertex(matrix, minX, maxY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, minX, maxY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, maxY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, maxY, minZ).setColor(r, g, b, a);
+        // Back face (Z-)
+        consumer.addVertex(pose, maxX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, maxY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, maxY, minZ).setColor(r, g, b, a);
 
-        // North (Z-)
-        consumer.addVertex(matrix, minX, minY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, minX, maxY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, maxY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, minY, minZ).setColor(r, g, b, a);
+        // Left face (X-)
+        consumer.addVertex(pose, minX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, maxY, minZ).setColor(r, g, b, a);
 
-        // South (Z+)
-        consumer.addVertex(matrix, minX, minY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, minY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, maxY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, minX, maxY, maxZ).setColor(r, g, b, a);
+        // Right face (X+)
+        consumer.addVertex(pose, maxX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, maxY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, maxY, maxZ).setColor(r, g, b, a);
 
-        // West (X-)
-        consumer.addVertex(matrix, minX, minY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, minX, minY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, minX, maxY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, minX, maxY, minZ).setColor(r, g, b, a);
+        // Top face (Y+)
+        consumer.addVertex(pose, minX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, maxY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, maxY, minZ).setColor(r, g, b, a);
 
-        // East (X+)
-        consumer.addVertex(matrix, maxX, minY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, maxY, minZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, maxY, maxZ).setColor(r, g, b, a);
-        consumer.addVertex(matrix, maxX, minY, maxZ).setColor(r, g, b, a);
+        // Bottom face (Y-)
+        consumer.addVertex(pose, minX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, maxX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(pose, minX, minY, maxZ).setColor(r, g, b, a);
     }
 }

@@ -44,9 +44,8 @@ public class VeinFarmingClientMod implements ClientModInitializer {
             }
         });
 
-        // Register 3D Wireframe and Ghost highlight rendering
+        // Register 3D Wireframe and Ghost highlight rendering via 26.1 SubmitNodeCollector pipeline
         LevelRenderEvents.BEFORE_BLOCK_OUTLINE.register(StandaloneHighlightRenderer::onBlockOutline);
-        LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(StandaloneHighlightRenderer::onRenderWorld);
+        LevelRenderEvents.COLLECT_SUBMITS.register(StandaloneHighlightRenderer::onRenderWorld);
     }
 }
-

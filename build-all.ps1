@@ -118,6 +118,10 @@ try {
     Invoke-Build 'Fabric 1.21.11'   '1.21.11\fabric'   'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'NeoForge 26.1.2'  '26.1\neoforge'    'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'Fabric 26.1.2'    '26.1\fabric'      'JAVA25_HOME' 'JDK 25'
+    Invoke-Build 'NeoForge 26.2'    '26.2\neoforge'    'JAVA25_HOME' 'JDK 25'
+    Invoke-Build 'Fabric 26.2'      '26.2\fabric'      'JAVA25_HOME' 'JDK 25'
+    Invoke-Build 'NeoForge 26.3'    '26.3\neoforge'    'JAVA25_HOME' 'JDK 25'
+    Invoke-Build 'Fabric 26.3'      '26.3\fabric'      'JAVA25_HOME' 'JDK 25'
 
     $forge1201Jar = Get-LatestReleaseJar `
         (Join-Path $Root '1.20.1\forge\build\libs') `
@@ -154,6 +158,26 @@ try {
         'vein_farming-26.1.2-fabric-*.jar' `
         'Fabric 26.1.2'
 
+    $neoForge262Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.2\neoforge\build\libs') `
+        'vein_farming-26.2-neoforge-*.jar' `
+        'NeoForge 26.2'
+
+    $fabric262Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.2\fabric\build\libs') `
+        'vein_farming-26.2-fabric-*.jar' `
+        'Fabric 26.2'
+
+    $neoForge263Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.3\neoforge\build\libs') `
+        'vein_farming-26.3-neoforge-*.jar' `
+        'NeoForge 26.3'
+
+    $fabric263Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.3\fabric\build\libs') `
+        'vein_farming-26.3-fabric-*.jar' `
+        'Fabric 26.3'
+
     Write-Host ""
     Write-Host "Copying artifacts to release directory..." -ForegroundColor Cyan
     Copy-ReleaseJar $forge1201Jar     'Forge 1.20.1'
@@ -163,6 +187,10 @@ try {
     Copy-ReleaseJar $fabric12111Jar   'Fabric 1.21.11'
     Copy-ReleaseJar $neoForge261Jar   'NeoForge 26.1.2'
     Copy-ReleaseJar $fabric261Jar     'Fabric 26.1.2'
+    Copy-ReleaseJar $neoForge262Jar   'NeoForge 26.2'
+    Copy-ReleaseJar $fabric262Jar     'Fabric 26.2'
+    Copy-ReleaseJar $neoForge263Jar   'NeoForge 26.3'
+    Copy-ReleaseJar $fabric263Jar     'Fabric 26.3'
 
     $gameModsDir = 'C:\Users\hunga\AppData\Roaming\.minecraft\versions\neoforge 1.21.1\mods'
     if (Test-Path $gameModsDir) {
@@ -172,7 +200,7 @@ try {
     }
 
     Write-Host ""
-    Write-Host "All 7 builds completed successfully!" -ForegroundColor Green
+    Write-Host "All 11 builds completed successfully!" -ForegroundColor Green
     Write-Host "Release directory: $OutputDirectory" -ForegroundColor Green
 }
 finally {

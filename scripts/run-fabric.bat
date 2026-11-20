@@ -15,9 +15,11 @@ echo   1) Fabric 1.21.1   (Java 21)
 echo   2) Fabric 1.21.11  (Java 21)
 echo   3) Fabric 1.20.1   (Java 17)
 echo   4) Fabric 26.1.2   (Java 25)
+echo   5) Fabric 26.2     (Java 25)
+echo   6) Fabric 26.3     (Java 25)
 echo   0) Exit
 echo ----------------------------------------------------
-set /p "CHOICE=Select version to run [1-4, default=1]: "
+set /p "CHOICE=Select version to run [1-6, default=1]: "
 if "%CHOICE%"=="" set "CHOICE=1"
 
 :HANDLE_CHOICE
@@ -37,6 +39,14 @@ if "%CHOICE%"=="4" goto :RUN_261
 if "%CHOICE%"=="26.1" goto :RUN_261
 if "%CHOICE%"=="26.1.2" goto :RUN_261
 if "%CHOICE%"=="261" goto :RUN_261
+
+if "%CHOICE%"=="5" goto :RUN_262
+if "%CHOICE%"=="26.2" goto :RUN_262
+if "%CHOICE%"=="262" goto :RUN_262
+
+if "%CHOICE%"=="6" goto :RUN_263
+if "%CHOICE%"=="26.3" goto :RUN_263
+if "%CHOICE%"=="263" goto :RUN_263
 
 if "%CHOICE%"=="0" exit /b 0
 
@@ -61,6 +71,16 @@ goto :START_CLIENT
 
 :RUN_261
 set "TARGET_DIR=26.1\fabric"
+call :SETUP_JAVA25
+goto :START_CLIENT
+
+:RUN_262
+set "TARGET_DIR=26.2\fabric"
+call :SETUP_JAVA25
+goto :START_CLIENT
+
+:RUN_263
+set "TARGET_DIR=26.3\fabric"
 call :SETUP_JAVA25
 goto :START_CLIENT
 

@@ -479,7 +479,10 @@ public class StandaloneHighlightRenderer {
             BlockPos renderPos = (isPlanting && !isCocoaPlanting) ? pos.above() : pos;
             net.minecraft.world.phys.AABB aabb;
             if (isPlanting) {
-                aabb = new net.minecraft.world.phys.AABB(renderPos);
+                aabb = new net.minecraft.world.phys.AABB(
+                        renderPos.getX() + 0.002, renderPos.getY() + 0.003, renderPos.getZ() + 0.002,
+                        renderPos.getX() + 0.998, renderPos.getY() + 0.998, renderPos.getZ() + 0.998
+                );
             } else {
                 BlockState state = level.getBlockState(renderPos);
                 VoxelShape shape = state.getShape(level, renderPos);
@@ -491,6 +494,12 @@ public class StandaloneHighlightRenderer {
                     if (coverTop > aabb.maxY) {
                         aabb = new net.minecraft.world.phys.AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, coverTop, aabb.maxZ);
                     }
+                    aabb = new net.minecraft.world.phys.AABB(
+                            aabb.minX - 0.002, aabb.minY - 0.002, aabb.minZ - 0.002,
+                            aabb.maxX + 0.002, aabb.maxY + 0.007, aabb.maxZ + 0.002
+                    );
+                } else {
+                    aabb = aabb.inflate(0.002);
                 }
             }
             net.minecraft.world.phys.AABB camRelative = aabb.move(-camPos.x, -camPos.y, -camPos.z);
@@ -544,13 +553,13 @@ public class StandaloneHighlightRenderer {
 
                 if (waterHoleSet.contains(pos)) {
                     // Render translucent water hole preview (using Light Blue Stained Glass model for fluid rendering compatibility)
-                    double yOffset = (blockTop - 1.0) + 0.003;
+                    double yOffset = (blockTop - 1.0) + 0.006;
                     BlockState waterGhost = Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState();
                     MultiBufferSource fadedBuffer = waterFadedBuffer;
 
                     poseStack.pushPose();
                     poseStack.translate(pos.getX() - camPos.x + 0.5, pos.getY() - camPos.y + yOffset, pos.getZ() - camPos.z + 0.5);
-                    poseStack.scale(1.002f, 1.0f, 1.002f);
+                    poseStack.scale(0.998f, 1.0f, 0.998f);
                     poseStack.translate(-0.5, 0.0, -0.5);
                     int light = LevelRenderer.getLightColor(level, pos.above());
                     mc.getBlockRenderer().renderSingleBlock(
@@ -565,7 +574,7 @@ public class StandaloneHighlightRenderer {
                     poseStack.popPose();
                 } else {
                     // Farmland model is 0.9375 (15/16) tall. Elevate so top face sits 0.003 above the block surface (eliminating grass occlusion and dirt path z-fighting)
-                    double yOffset = (blockTop - 0.9375) + 0.003;
+                    double yOffset = (blockTop - 0.9375) + 0.006;
 
                     boolean hasWater = FarmingManager.isNearWater(level, pos) || FarmingManager.isHydratedByHoles(pos, plannedWaterHoles);
                     BlockState farmlandState = Blocks.FARMLAND.defaultBlockState()
@@ -574,7 +583,7 @@ public class StandaloneHighlightRenderer {
 
                     poseStack.pushPose();
                     poseStack.translate(pos.getX() - camPos.x + 0.5, pos.getY() - camPos.y + yOffset, pos.getZ() - camPos.z + 0.5);
-                    poseStack.scale(1.002f, 1.0f, 1.002f);
+                    poseStack.scale(0.998f, 1.0f, 0.998f);
                     poseStack.translate(-0.5, 0.0, -0.5);
                     int light = LevelRenderer.getLightColor(level, pos.above());
                     mc.getBlockRenderer().renderSingleBlock(
@@ -626,7 +635,13 @@ public class StandaloneHighlightRenderer {
 
                 BlockPos plantPos = isCocoaPlanting ? pos : pos.above();
                 poseStack.pushPose();
-                poseStack.translate(plantPos.getX() - camPos.x, plantPos.getY() - camPos.y, plantPos.getZ() - camPos.z);
+                if (!isCocoaPlanting) {
+                    poseStack.translate(plantPos.getX() - camPos.x + 0.5, plantPos.getY() - camPos.y + 0.004, plantPos.getZ() - camPos.z + 0.5);
+                    poseStack.scale(0.996f, 1.0f, 0.996f);
+                    poseStack.translate(-0.5, 0.0, -0.5);
+                } else {
+                    poseStack.translate(plantPos.getX() - camPos.x, plantPos.getY() - camPos.y, plantPos.getZ() - camPos.z);
+                }
                 int light = LevelRenderer.getLightColor(level, plantPos);
                 mc.getBlockRenderer().renderSingleBlock(
                         stateToRender,
@@ -673,7 +688,9 @@ public class StandaloneHighlightRenderer {
 
                     for (BlockPos fruitPos : fruitSpots) {
                         poseStack.pushPose();
-                        poseStack.translate(fruitPos.getX() - camPos.x, fruitPos.getY() - camPos.y, fruitPos.getZ() - camPos.z);
+                        poseStack.translate(fruitPos.getX() - camPos.x + 0.5, fruitPos.getY() - camPos.y + 0.004, fruitPos.getZ() - camPos.z + 0.5);
+                        poseStack.scale(0.994f, 1.0f, 0.994f);
+                        poseStack.translate(-0.5, 0.0, -0.5);
                         int light = LevelRenderer.getLightColor(level, fruitPos);
                         mc.getBlockRenderer().renderSingleBlock(
                                 fruitState,

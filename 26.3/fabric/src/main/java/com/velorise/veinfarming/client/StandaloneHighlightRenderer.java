@@ -491,7 +491,10 @@ public class StandaloneHighlightRenderer {
             BlockPos renderPos = (isPlanting && !isCocoaPlanting) ? pos.above() : pos;
             AABB aabb;
             if (isPlanting) {
-                aabb = new AABB(renderPos);
+                aabb = new AABB(
+                        renderPos.getX() + 0.002, renderPos.getY() + 0.003, renderPos.getZ() + 0.002,
+                        renderPos.getX() + 0.998, renderPos.getY() + 0.998, renderPos.getZ() + 0.998
+                );
             } else {
                 BlockState state = level.getBlockState(renderPos);
                 VoxelShape shape = state.getShape(level, renderPos);
@@ -503,6 +506,12 @@ public class StandaloneHighlightRenderer {
                     if (coverTop > aabb.maxY) {
                         aabb = new AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, coverTop, aabb.maxZ);
                     }
+                    aabb = new AABB(
+                            aabb.minX - 0.002, aabb.minY - 0.002, aabb.minZ - 0.002,
+                            aabb.maxX + 0.002, aabb.maxY + 0.007, aabb.maxZ + 0.002
+                    );
+                } else {
+                    aabb = aabb.inflate(0.002);
                 }
             }
             AABB camRelative = aabb.move(-camPos.x, -camPos.y, -camPos.z);
@@ -548,19 +557,19 @@ public class StandaloneHighlightRenderer {
                 double blockTop = getHoePreviewTopY(level, pos);
 
                 if (waterHoleSet.contains(pos)) {
-                    double yOffset = (blockTop - 1.0) + 0.003;
+                    double yOffset = (blockTop - 1.0) + 0.006;
                     ghostBlocks.add(new GhostBlock(
                             waterGhost, pos.above(),
                             pos.getX() - camPos.x, pos.getY() - camPos.y + yOffset, pos.getZ() - camPos.z,
-                            1.002f, 0.65f
+                            0.998f, 0.65f
                     ));
                 } else {
-                    double yOffset = (blockTop - 0.9375) + 0.003;
+                    double yOffset = (blockTop - 0.9375) + 0.006;
                     boolean hasWater = FarmingManager.isNearWater(level, pos) || FarmingManager.isHydratedByHoles(pos, plannedWaterHoles);
                     ghostBlocks.add(new GhostBlock(
                             hasWater ? wetFarmland : dryFarmland, pos.above(),
                             pos.getX() - camPos.x, pos.getY() - camPos.y + yOffset, pos.getZ() - camPos.z,
-                            1.002f, hasWater ? 0.70f : 0.50f
+                            0.998f, hasWater ? 0.70f : 0.50f
                     ));
                 }
             }
@@ -596,10 +605,12 @@ public class StandaloneHighlightRenderer {
                 if (stateToRender == null) continue;
 
                 BlockPos plantPos = isCocoaPlanting ? pos : pos.above();
+                double plantYOffset = isCocoaPlanting ? 0.0 : 0.004;
+                float plantScaleXZ = isCocoaPlanting ? 1.0f : 0.996f;
                 ghostBlocks.add(new GhostBlock(
                         stateToRender, plantPos,
-                        plantPos.getX() - camPos.x, plantPos.getY() - camPos.y, plantPos.getZ() - camPos.z,
-                        1.0f, 0.45f
+                        plantPos.getX() - camPos.x, plantPos.getY() - camPos.y + plantYOffset, plantPos.getZ() - camPos.z,
+                        plantScaleXZ, 0.45f
                 ));
             }
         }
@@ -631,8 +642,8 @@ public class StandaloneHighlightRenderer {
                 for (BlockPos fruitPos : fruitSpots) {
                     ghostBlocks.add(new GhostBlock(
                             fruitState, fruitPos,
-                            fruitPos.getX() - camPos.x, fruitPos.getY() - camPos.y, fruitPos.getZ() - camPos.z,
-                            1.0f, 0.35f
+                            fruitPos.getX() - camPos.x, fruitPos.getY() - camPos.y + 0.004, fruitPos.getZ() - camPos.z,
+                            0.994f, 0.35f
                     ));
                 }
             }
@@ -649,7 +660,7 @@ public class StandaloneHighlightRenderer {
 
         // Submit real textured, tinted, translucent 3D block models through SubmitNodeCollector
         if (!ghostBlocks.isEmpty()) {
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
                 ModelBlockRenderer blockRenderer = new ModelBlockRenderer(false, false, mc.getBlockColors());
                 PoseStack localStack = new PoseStack();
                 localStack.last().pose().set(pose.pose());

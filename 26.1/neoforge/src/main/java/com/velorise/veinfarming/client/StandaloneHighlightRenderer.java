@@ -455,7 +455,10 @@ public class StandaloneHighlightRenderer {
             BlockPos renderPos = (isPlanting && !isCocoaPlanting) ? pos.above() : pos;
             AABB aabb;
             if (isPlanting) {
-                aabb = new AABB(renderPos);
+                aabb = new AABB(
+                        renderPos.getX() + 0.002, renderPos.getY() + 0.003, renderPos.getZ() + 0.002,
+                        renderPos.getX() + 0.998, renderPos.getY() + 0.998, renderPos.getZ() + 0.998
+                );
             } else {
                 BlockState state = level.getBlockState(renderPos);
                 VoxelShape shape = state.getShape(level, renderPos);
@@ -467,6 +470,12 @@ public class StandaloneHighlightRenderer {
                     if (coverTop > aabb.maxY) {
                         aabb = new AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, coverTop, aabb.maxZ);
                     }
+                    aabb = new AABB(
+                            aabb.minX - 0.002, aabb.minY - 0.002, aabb.minZ - 0.002,
+                            aabb.maxX + 0.002, aabb.maxY + 0.007, aabb.maxZ + 0.002
+                    );
+                } else {
+                    aabb = aabb.inflate(0.002);
                 }
             }
 
@@ -511,19 +520,19 @@ public class StandaloneHighlightRenderer {
                 double blockTop = getHoePreviewTopY(level, pos);
 
                 if (waterHoleSet.contains(pos)) {
-                    double yOffset = (blockTop - 1.0) + 0.003;
+                    double yOffset = (blockTop - 1.0) + 0.006;
                     worldGhostBlocks.add(new GhostBlock(
                             waterGhost, pos.above(),
                             pos.getX(), pos.getY() + yOffset, pos.getZ(),
-                            1.002f, 0.65f
+                            0.998f, 0.65f
                     ));
                 } else {
-                    double yOffset = (blockTop - 0.9375) + 0.003;
+                    double yOffset = (blockTop - 0.9375) + 0.006;
                     boolean hasWater = FarmingManager.isNearWater(level, pos) || FarmingManager.isHydratedByHoles(pos, plannedWaterHoles);
                     worldGhostBlocks.add(new GhostBlock(
                             hasWater ? wetFarmland : dryFarmland, pos.above(),
                             pos.getX(), pos.getY() + yOffset, pos.getZ(),
-                            1.002f, hasWater ? 0.70f : 0.50f
+                            0.998f, hasWater ? 0.70f : 0.50f
                     ));
                 }
             }
@@ -559,10 +568,12 @@ public class StandaloneHighlightRenderer {
                 if (stateToRender == null) continue;
 
                 BlockPos plantPos = isCocoaPlanting ? pos : pos.above();
+                double plantYOffset = isCocoaPlanting ? 0.0 : 0.004;
+                float plantScaleXZ = isCocoaPlanting ? 1.0f : 0.996f;
                 worldGhostBlocks.add(new GhostBlock(
                         stateToRender, plantPos,
-                        plantPos.getX(), plantPos.getY(), plantPos.getZ(),
-                        1.0f, 0.45f
+                        plantPos.getX(), plantPos.getY() + plantYOffset, plantPos.getZ(),
+                        plantScaleXZ, 0.45f
                 ));
             }
         }
@@ -594,8 +605,8 @@ public class StandaloneHighlightRenderer {
                 for (BlockPos fruitPos : fruitSpots) {
                     worldGhostBlocks.add(new GhostBlock(
                             fruitState, fruitPos,
-                            fruitPos.getX(), fruitPos.getY(), fruitPos.getZ(),
-                            1.0f, 0.35f
+                            fruitPos.getX(), fruitPos.getY() + 0.004, fruitPos.getZ(),
+                            0.994f, 0.35f
                     ));
                 }
             }

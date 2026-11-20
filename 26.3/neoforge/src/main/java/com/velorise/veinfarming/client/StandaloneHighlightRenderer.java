@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.velorise.veinfarming.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
@@ -631,7 +631,7 @@ public class StandaloneHighlightRenderer {
                         poseStack.translate(ghost.x() - camPos.x, ghost.y() - camPos.y, ghost.z() - camPos.z);
                     }
 
-                    submitNodeCollector.submitCustomGeometry(poseStack, Sheets.translucentItemSheet(), (blockPose, blockBuffer) -> {
+                    submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (blockPose, blockBuffer) -> {
                         blockRenderer.tesselateBlock(
                                 (x, y, z, quad, instance) -> {
                                     for (int v = 0; v < 4; v++) {

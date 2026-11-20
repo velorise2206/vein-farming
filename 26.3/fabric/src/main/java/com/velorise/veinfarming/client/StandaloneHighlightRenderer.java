@@ -6,7 +6,7 @@ import com.velorise.veinfarming.*;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
@@ -649,7 +649,7 @@ public class StandaloneHighlightRenderer {
 
         // Submit real textured, tinted, translucent 3D block models through SubmitNodeCollector
         if (!ghostBlocks.isEmpty()) {
-            submitNodeCollector.submitCustomGeometry(poseStack, Sheets.translucentItemSheet(), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
                 ModelBlockRenderer blockRenderer = new ModelBlockRenderer(false, false, mc.getBlockColors());
                 PoseStack localStack = new PoseStack();
                 localStack.last().pose().set(pose.pose());

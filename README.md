@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v2.0.2-brightgreen.svg" alt="Release" />
+  <img src="https://img.shields.io/badge/Release-v2.0.3-brightgreen.svg" alt="Release" />
   <img src="https://img.shields.io/badge/Minecraft-1.21.11%20%7C%201.21.1%20%7C%201.20.1-blue.svg" alt="Minecraft Versions" />
   <img src="https://img.shields.io/badge/Loaders-NeoForge%20%7C%20Fabric%20%7C%20Forge-orange.svg" alt="Mod Loaders" />
 </p>
@@ -26,10 +26,10 @@ This repository contains all official editions of Vein Farming:
 
 | Subfolder | Minecraft Version | Mod Loader | Java | Status | Release Artifact |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| [`neoforge-1.21.1/`](neoforge-1.21.1/) | **1.21.1** | NeoForge 21.1.65+ | Java 21 | Stable Release | `vein_farming-1.21.1-neoforge-2.0.2.jar` |
-| [`fabric-1.21.1/`](fabric-1.21.1/) | **1.21.1** | Fabric Loader 0.16.9+ | Java 21 | Stable Release | `vein_farming-1.21.1-fabric-2.0.2.jar` |
-| [`fabric-1.21.11/`](fabric-1.21.11/) | **1.21.11** | Fabric Loader 0.17.3+ | Java 21 | Stable Release | `vein_farming-1.21.11-fabric-2.0.2.jar` |
-| [`forge-1.20.1/`](forge-1.20.1/) | **1.20.1** | Forge 47.3.0+ | Java 17 | Stable Release | `vein_farming-1.20.1-forge-2.0.2.jar` |
+| [`neoforge-1.21.1/`](neoforge-1.21.1/) | **1.21.1** | NeoForge 21.1.65+ | Java 21 | Stable Release | `vein_farming-1.21.1-neoforge-2.0.3.jar` |
+| [`fabric-1.21.1/`](fabric-1.21.1/) | **1.21.1** | Fabric Loader 0.16.9+ | Java 21 | Stable Release | `vein_farming-fabric-1.21.1-2.0.3.jar` |
+| [`fabric-1.21.11/`](fabric-1.21.11/) | **1.21.11** | Fabric Loader 0.17.3+ | Java 21 | Stable Release | `vein_farming-fabric-1.21.11-2.0.3.jar` |
+| [`forge-1.20.1/`](forge-1.20.1/) | **1.20.1** | Forge 47.3.0+ | Java 17 | Stable Release | `vein_farming-1.20.1-forge-2.0.3.jar` |
 
 ---
 

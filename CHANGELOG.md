@@ -4,6 +4,17 @@ All notable changes to **Vein Farming** are documented in this file.
 
 ---
 
+## [2.2.0] — Minecraft 26.x Ports & Visual Overhaul
+
+- **Minecraft 26.x Ports:** Added full support for Minecraft 26.1, 26.2, and 26.3 on both Fabric and NeoForge (11 ports total).
+- **Real 3D Ghost Models:** Replaced debug cubes with real textured, tinted 3D block models for tilling, water holes, seeds, and fruits.
+- **Anti-Flicker & Z-Fighting Fix:** Re-enabled Backface Culling, batched geometry into a single submit pass, and fine-tuned offsets (+0.004/+0.006) to eliminate flickering.
+- **Cover Layer Offset:** Preview wireframes and ghost blocks automatically elevate above low surface covers (snow layers, leaf litter, petals).
+- **Block Outline Fix:** Preserved vanilla block selection outline when holding tools/seeds near non-farm blocks; added destroy outline fallback for 1-block column crops (cactus, sugar cane, bamboo).
+- **NeoForge Fluid API:** Integrated NeoForge Transfer API for fluid container interoperability.
+
+---
+
 ## [2.1.0] — Multi-Loader Architecture & Fabric 1.20.1
 
 - Refactored project into shared per-version `common/` modules with `PlatformBridge`.

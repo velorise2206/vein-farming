@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.velorise.veinfarming.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "FarmBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

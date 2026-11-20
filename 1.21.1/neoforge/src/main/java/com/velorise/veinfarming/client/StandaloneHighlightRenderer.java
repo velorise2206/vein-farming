@@ -486,6 +486,12 @@ public class StandaloneHighlightRenderer {
                 aabb = shape.isEmpty()
                         ? new net.minecraft.world.phys.AABB(renderPos)
                         : shape.bounds().move(renderPos);
+                if (isHoe) {
+                    double coverTop = renderPos.getY() + getHoePreviewTopY(level, renderPos);
+                    if (coverTop > aabb.maxY) {
+                        aabb = new net.minecraft.world.phys.AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, coverTop, aabb.maxZ);
+                    }
+                }
             }
             net.minecraft.world.phys.AABB camRelative = aabb.move(-camPos.x, -camPos.y, -camPos.z);
 
@@ -534,9 +540,7 @@ public class StandaloneHighlightRenderer {
             MultiBufferSource dryFadedBuffer = type -> dryFadedConsumer;
 
             for (BlockPos pos : previewBlocks) {
-                BlockState targetState = level.getBlockState(pos);
-                VoxelShape shape = targetState.getShape(level, pos);
-                double blockTop = shape.isEmpty() ? 1.0 : shape.max(Direction.Axis.Y);
+                double blockTop = getHoePreviewTopY(level, pos);
 
                 if (waterHoleSet.contains(pos)) {
                     // Render translucent water hole preview (using Light Blue Stained Glass model for fluid rendering compatibility)
@@ -686,6 +690,30 @@ public class StandaloneHighlightRenderer {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the effective top Y (relative to pos.getY()) for hoe wireframe & ghost preview.
+     * Lifts the preview just above low flat surface covers (e.g. snow layers, leaf litter, petals)
+     * that will be cleared on till so the cover does not occlude the preview.
+     */
+    private static double getHoePreviewTopY(net.minecraft.world.level.Level level, BlockPos pos) {
+        BlockState targetState = level.getBlockState(pos);
+        VoxelShape shape = targetState.getShape(level, pos);
+        double blockTop = shape.isEmpty() ? 1.0 : shape.max(Direction.Axis.Y);
+
+        BlockPos abovePos = pos.above();
+        BlockState aboveState = level.getBlockState(abovePos);
+        if (!aboveState.isAir() && com.velorise.veinfarming.PlantClassifier.isFoliageOrPlant(aboveState)) {
+            VoxelShape aboveShape = aboveState.getShape(level, abovePos);
+            if (!aboveShape.isEmpty()) {
+                double coverHeight = aboveShape.max(Direction.Axis.Y);
+                if (coverHeight > 0.0 && coverHeight <= 0.5) {
+                    blockTop = Math.max(blockTop, 1.0 + coverHeight);
+                }
+            }
+        }
+        return blockTop;
     }
 
     public static BlockState getPlantedBlockState(ItemStack stack) {

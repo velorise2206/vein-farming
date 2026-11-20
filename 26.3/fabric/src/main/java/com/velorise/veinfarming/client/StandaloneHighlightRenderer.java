@@ -124,6 +124,10 @@ public class StandaloneHighlightRenderer {
         BlockState clickedState = level.getBlockState(clickedPos);
         ItemStack heldItem = player.getMainHandItem();
         ItemStack offItem = player.getOffhandItem();
+        if (lastClickedPos != null && lastClickedPos.equals(clickedPos)
+                && (cachedPreviewBlocks == null || cachedPreviewBlocks.isEmpty())) {
+            return true;
+        }
         if (isFarmingAction(level, player, clickedPos, clickedState, heldItem, offItem)) {
             return false;
         }
@@ -160,8 +164,10 @@ public class StandaloneHighlightRenderer {
                 if (PlantClassifier.isJungleLog(clickedState) || clickedState.getBlock() instanceof CocoaBlock) {
                     return true;
                 }
-            } else if (FarmingManager.isValidSoilForSeed(activeSeed, clickedState, level, clickedPos)
-                    || FarmingManager.isValidSoilForSeed(activeSeed, level.getBlockState(clickedPos.below()), level, clickedPos.below())) {
+            } else if ((FarmingManager.isValidSoilForSeed(activeSeed, clickedState, level, clickedPos)
+                            && (level.getBlockState(clickedPos.above()).isAir() || level.getBlockState(clickedPos.above()).canBeReplaced()))
+                    || (FarmingManager.isValidSoilForSeed(activeSeed, level.getBlockState(clickedPos.below()), level, clickedPos.below())
+                            && (clickedState.isAir() || clickedState.canBeReplaced()))) {
                 return true;
             }
         }
@@ -175,7 +181,12 @@ public class StandaloneHighlightRenderer {
         }
 
         if (heldItem.is(Items.BONE_MEAL)) {
-            return true;
+            if (FarmingManager.isCrop(clickedState) || FarmingManager.isFarmland(clickedState)
+                    || FarmingManager.isBonemealCrop(clickedState)
+                    || FarmingManager.isBonemealCrop(level.getBlockState(clickedPos.above()))
+                    || FarmingManager.isSmallFlower(clickedState)) {
+                return true;
+            }
         }
 
         if (clickedState.is(Blocks.COMPOSTER) && FarmingManager.isCompostable(heldItem)) {
@@ -343,7 +354,12 @@ public class StandaloneHighlightRenderer {
                 } else {
                     previewBlocks = FarmingManager.fallbackHarvestSearch(level, targetCrop);
                 }
-                r = 1.0f; g = 0.82f; b = 0.2f; a = 0.8f;
+                if ((previewBlocks == null || previewBlocks.isEmpty()) && isPlant) {
+                    previewBlocks = FarmingManager.findDestroyTargets(level, targetCrop, targetCropState);
+                    r = 1.0f; g = 0.22f; b = 0.22f; a = 0.85f;
+                } else {
+                    r = 1.0f; g = 0.82f; b = 0.2f; a = 0.8f;
+                }
             } else if (clickedState.is(Blocks.COMPOSTER) && FarmingConfig.BATCH_COMPOSTER.get() && FarmingManager.isCompostable(heldItem)) {
                 previewBlocks = Collections.singletonList(clickedPos);
                 r = 0.45f; g = 0.75f; b = 0.25f;

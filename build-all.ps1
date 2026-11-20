@@ -109,40 +109,54 @@ function Copy-ReleaseJar(
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 
 try {
-    Invoke-Build 'Forge 1.20.1'     'forge-1.20.1'     'JAVA17_HOME' 'JDK 17'
-    Invoke-Build 'NeoForge 1.21.1'  'neoforge-1.21.1'  'JAVA21_HOME' 'JDK 21'
-    Invoke-Build 'Fabric 1.21.1'    'fabric-1.21.1'    'JAVA21_HOME' 'JDK 21'
-    Invoke-Build 'Fabric 1.21.11'   'fabric-1.21.11'   'JAVA21_HOME' 'JDK 21'
+    Invoke-Build 'Forge 1.20.1'     '1.20.1\forge'     'JAVA17_HOME' 'JDK 17'
+    Invoke-Build 'Fabric 1.20.1'    '1.20.1\fabric'    'JAVA17_HOME' 'JDK 17'
+    Invoke-Build 'NeoForge 1.21.1'  '1.21.1\neoforge'  'JAVA21_HOME' 'JDK 21'
+    Invoke-Build 'Fabric 1.21.1'    '1.21.1\fabric'    'JAVA21_HOME' 'JDK 21'
+    Invoke-Build 'Fabric 1.21.11'   '1.21.11\fabric'   'JAVA21_HOME' 'JDK 21'
 
     $forge1201Jar = Get-LatestReleaseJar `
-        (Join-Path $Root 'forge-1.20.1\build\libs') `
+        (Join-Path $Root '1.20.1\forge\build\libs') `
         'vein_farming-1.20.1-forge-*.jar' `
         'Forge 1.20.1'
 
+    $fabric1201Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '1.20.1\fabric\build\libs') `
+        'vein_farming-1.20.1-fabric-*.jar' `
+        'Fabric 1.20.1'
+
     $neoForge121Jar = Get-LatestReleaseJar `
-        (Join-Path $Root 'neoforge-1.21.1\build\libs') `
+        (Join-Path $Root '1.21.1\neoforge\build\libs') `
         'vein_farming-1.21.1-neoforge-*.jar' `
         'NeoForge 1.21.1'
 
     $fabric121Jar = Get-LatestReleaseJar `
-        (Join-Path $Root 'fabric-1.21.1\build\libs') `
+        (Join-Path $Root '1.21.1\fabric\build\libs') `
         'vein_farming-fabric-1.21.1-*.jar' `
         'Fabric 1.21.1'
 
     $fabric12111Jar = Get-LatestReleaseJar `
-        (Join-Path $Root 'fabric-1.21.11\build\libs') `
+        (Join-Path $Root '1.21.11\fabric\build\libs') `
         'vein_farming-fabric-1.21.11-*.jar' `
         'Fabric 1.21.11'
 
     Write-Host ""
     Write-Host "Copying artifacts to release directory..." -ForegroundColor Cyan
     Copy-ReleaseJar $forge1201Jar     'Forge 1.20.1'
+    Copy-ReleaseJar $fabric1201Jar    'Fabric 1.20.1'
     Copy-ReleaseJar $neoForge121Jar   'NeoForge 1.21.1'
     Copy-ReleaseJar $fabric121Jar     'Fabric 1.21.1'
     Copy-ReleaseJar $fabric12111Jar   'Fabric 1.21.11'
 
+    $gameModsDir = 'C:\Users\hunga\AppData\Roaming\.minecraft\versions\neoforge 1.21.1\mods'
+    if (Test-Path $gameModsDir) {
+        Get-ChildItem -Path $gameModsDir -Filter 'vein_farming*.jar' | Remove-Item -Force
+        Copy-Item -Path $neoForge121Jar.FullName -Destination $gameModsDir -Force
+        Write-Host "[DEPLOYED] NeoForge 1.21.1 -> $gameModsDir\$($neoForge121Jar.Name)" -ForegroundColor Green
+    }
+
     Write-Host ""
-    Write-Host "All 4 builds completed successfully!" -ForegroundColor Green
+    Write-Host "All 5 builds completed successfully!" -ForegroundColor Green
     Write-Host "Release directory: $OutputDirectory" -ForegroundColor Green
 }
 finally {

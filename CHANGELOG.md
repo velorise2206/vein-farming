@@ -4,6 +4,14 @@ All notable changes to **Vein Farming** are documented in this file.
 
 ---
 
+## [2.1.0] — Multi-Loader Architecture & Fabric 1.20.1
+
+- Refactored project into shared per-version `common/` modules with `PlatformBridge`.
+- Added full Fabric 1.20.1 port alongside Forge 1.20.1, NeoForge 1.21.1, Fabric 1.21.1, and Fabric 1.21.11.
+- Updated GitHub Actions CI and build scripts to support all 5 ports.
+
+---
+
 ## [2.0.3] — Bug Fixes & Refinements
 
 - Added claim protection across all mass farming actions.
@@ -16,6 +24,7 @@ All notable changes to **Vein Farming** are documented in this file.
 ---
 
 ## [2.0.2] — Bug Fixes & Refinements
+
 - Added offhand seed selection support for ghost preview.
 - Disallowed tilling grass foliage and avoided creating water holes on grass blocks.
 - Added claim protection integration and reflection caching.
@@ -39,3 +48,4 @@ All notable changes to **Vein Farming** are documented in this file.
 - 2-Pass Hybrid Irrigation Grid for optimal water hole placement with 100% hydration guarantee.
 - Smart mass planting with spatial geometry layouts (cross, checkerboard, spacing filters).
 - Mass tilling, AOE bone meal, stem-protected fruit harvesting, and batch composting.
+

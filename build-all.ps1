@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $Root = $PSScriptRoot
 $WorkspaceParent = Split-Path -Parent $Root.TrimEnd('\', '/')
-$OutputDirectory = Join-Path $WorkspaceParent 'mods'
+$OutputDirectory = Join-Path (Join-Path $WorkspaceParent 'mods') 'vein_farming'
 
 $OriginalJavaHome = $env:JAVA_HOME
 $OriginalPath = $env:Path

@@ -640,7 +640,7 @@ public class TillingAndFertilizingManager {
 
         for (int i = 0; i < batchLimit; i++) {
             consumed++;
-            if (serverLevel.random.nextFloat() < chance) {
+            if (serverLevel.getRandom().nextFloat() < chance) {
                 currentLevel++;
                 if (currentLevel >= 7) {
                     producedBoneMeal++;

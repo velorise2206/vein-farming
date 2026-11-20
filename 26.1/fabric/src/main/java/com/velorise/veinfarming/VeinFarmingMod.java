@@ -20,8 +20,8 @@ public class VeinFarmingMod implements ModInitializer {
         FarmingConfig.load();
 
         // Register custom networking payloads (C2S)
-        PayloadTypeRegistry.playC2S().register(FarmingKeyPayload.TYPE, FarmingKeyPayload.STREAM_CODEC);
-        PayloadTypeRegistry.playC2S().register(ToggleSmartPlantPayload.TYPE, ToggleSmartPlantPayload.STREAM_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(FarmingKeyPayload.TYPE, FarmingKeyPayload.STREAM_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ToggleSmartPlantPayload.TYPE, ToggleSmartPlantPayload.STREAM_CODEC);
 
         // Server-side network receivers
         ServerPlayNetworking.registerGlobalReceiver(FarmingKeyPayload.TYPE, (payload, context) -> {

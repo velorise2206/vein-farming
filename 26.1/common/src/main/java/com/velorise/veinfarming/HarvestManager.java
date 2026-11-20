@@ -324,7 +324,7 @@ public class HarvestManager {
             // Sweet Berry Bush: harvest berries without breaking or consuming seeds
             if (cropBlock instanceof SweetBerryBushBlock) {
                 int age = cropState.getValue(SweetBerryBushBlock.AGE);
-                int berryCount = 1 + serverLevel.random.nextInt(2) + (age >= 3 ? 1 : 0);
+                int berryCount = 1 + serverLevel.getRandom().nextInt(2) + (age >= 3 ? 1 : 0);
                 BlockState resetBush = cropState.setValue(SweetBerryBushBlock.AGE, 1);
                 serverLevel.setBlock(cropPos, resetBush, 2);
                 serverLevel.gameEvent(player, GameEvent.BLOCK_CHANGE, cropPos);
@@ -355,7 +355,7 @@ public class HarvestManager {
                                 .get(Enchantments.FORTUNE)
                                 .map(h -> EnchantmentHelper.getItemEnchantmentLevel(h, heldItem))
                                 .orElse(0);
-                        if (serverLevel.random.nextFloat() < (0.20F + 0.10F * fortune)) {
+                        if (serverLevel.getRandom().nextFloat() < (0.20F + 0.10F * fortune)) {
                             drops.add(new ItemStack(strawItem));
                         }
                     }
@@ -570,7 +570,7 @@ public class HarvestManager {
                 List<ItemStack> drops = new ArrayList<>(Block.getDrops(state, serverLevel, pos, null, player, heldItem));
                 if (PlantClassifier.isKnife(heldItem)) {
                     Item strawItem = BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath("farmersdelight", "straw"));
-                    if (strawItem != null && strawItem != Items.AIR && serverLevel.random.nextFloat() < 0.20F) {
+                    if (strawItem != null && strawItem != Items.AIR && serverLevel.getRandom().nextFloat() < 0.20F) {
                         drops.add(new ItemStack(strawItem));
                     }
                 }

@@ -14,9 +14,10 @@ echo ====================================================
 echo   1) Fabric 1.21.1   (Java 21)
 echo   2) Fabric 1.21.11  (Java 21)
 echo   3) Fabric 1.20.1   (Java 17)
+echo   4) Fabric 26.1.2   (Java 25)
 echo   0) Exit
 echo ----------------------------------------------------
-set /p "CHOICE=Select version to run [1-3, default=1]: "
+set /p "CHOICE=Select version to run [1-4, default=1]: "
 if "%CHOICE%"=="" set "CHOICE=1"
 
 :HANDLE_CHOICE
@@ -31,6 +32,11 @@ if "%CHOICE%"=="12111" goto :RUN_12111
 if "%CHOICE%"=="3" goto :RUN_1201
 if "%CHOICE%"=="1.20.1" goto :RUN_1201
 if "%CHOICE%"=="1201" goto :RUN_1201
+
+if "%CHOICE%"=="4" goto :RUN_261
+if "%CHOICE%"=="26.1" goto :RUN_261
+if "%CHOICE%"=="26.1.2" goto :RUN_261
+if "%CHOICE%"=="261" goto :RUN_261
 
 if "%CHOICE%"=="0" exit /b 0
 
@@ -52,6 +58,24 @@ goto :START_CLIENT
 set "TARGET_DIR=1.20.1\fabric"
 call :SETUP_JAVA17
 goto :START_CLIENT
+
+:RUN_261
+set "TARGET_DIR=26.1\fabric"
+call :SETUP_JAVA25
+goto :START_CLIENT
+
+:SETUP_JAVA25
+if defined JAVA25_HOME (
+    set "JAVA_HOME=%JAVA25_HOME%"
+) else if exist "C:\Program Files\Eclipse Adoptium\jdk-25.0.5.8-hotspot\bin\java.exe" (
+    set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-25.0.5.8-hotspot"
+) else if exist "C:\Program Files\Eclipse Adoptium\jdk-25\bin\java.exe" (
+    set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-25"
+) else if exist "C:\Program Files\Java\jdk-25\bin\java.exe" (
+    set "JAVA_HOME=C:\Program Files\Java\jdk-25"
+)
+if defined JAVA_HOME set "PATH=%JAVA_HOME%\bin;%PATH%"
+exit /b 0
 
 :SETUP_JAVA21
 if defined JAVA21_HOME (

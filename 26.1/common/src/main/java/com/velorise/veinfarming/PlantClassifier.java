@@ -28,9 +28,9 @@ import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.FarmlandBlock;
 import net.minecraft.world.level.block.FlowerBlock;
-import net.minecraft.world.level.block.FungusBlock;
+import net.minecraft.world.level.block.NetherFungusBlock;
 import net.minecraft.world.level.block.KelpBlock;
 import net.minecraft.world.level.block.KelpPlantBlock;
 import net.minecraft.world.level.block.MushroomBlock;
@@ -109,7 +109,7 @@ public class PlantClassifier {
                     || block instanceof SugarCaneBlock || block instanceof CactusBlock
                     || block instanceof KelpBlock || block instanceof KelpPlantBlock
                     || block instanceof CocoaBlock || block == Blocks.CHORUS_FLOWER
-                    || block instanceof MushroomBlock || block instanceof FungusBlock
+                    || block instanceof MushroomBlock || block instanceof NetherFungusBlock
                     || block.defaultBlockState().is(BlockTags.FLOWERS)) {
                 return true;
             }
@@ -141,7 +141,7 @@ public class PlantClassifier {
         }
         if (stack.getItem() instanceof BlockItem bi) {
             Block b = bi.getBlock();
-            return b instanceof MushroomBlock || b instanceof FungusBlock || b.defaultBlockState().is(C_BLOCK_MUSHROOMS);
+            return b instanceof MushroomBlock || b instanceof NetherFungusBlock || b.defaultBlockState().is(C_BLOCK_MUSHROOMS);
         }
         return false;
     }
@@ -153,7 +153,7 @@ public class PlantClassifier {
         return state.is(Blocks.RED_MUSHROOM) || state.is(Blocks.BROWN_MUSHROOM)
                 || state.is(Blocks.CRIMSON_FUNGUS) || state.is(Blocks.WARPED_FUNGUS)
                 || state.getBlock() instanceof MushroomBlock
-                || state.getBlock() instanceof FungusBlock
+                || state.getBlock() instanceof NetherFungusBlock
                 || state.is(C_BLOCK_MUSHROOMS);
     }
 
@@ -479,7 +479,7 @@ public class PlantClassifier {
             return false;
         }
         Block block = state.getBlock();
-        if (block == Blocks.FARMLAND || block instanceof FarmBlock) {
+        if (block == Blocks.FARMLAND || block instanceof FarmlandBlock) {
             return true;
         }
         return FARMLAND_CACHE.computeIfAbsent(block,
@@ -542,7 +542,7 @@ public class PlantClassifier {
             if (isFarmland(soilState)) {
                 return false;
             }
-            return soilState.is(BlockTags.BAMBOO_PLANTABLE_ON) || soilState.is(BlockTags.DIRT) || soilState.is(BlockTags.SAND);
+            return soilState.is(BlockTags.SUPPORTS_BAMBOO) || soilState.is(BlockTags.DIRT) || soilState.is(BlockTags.SAND);
         }
 
         // 6. Sugar Cane (strictly dirt/sand/mud with adjacent water, or existing sugar cane; NEVER farmland!)

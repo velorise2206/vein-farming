@@ -24,6 +24,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 public class FarmingEventHandler {
@@ -49,7 +50,7 @@ public class FarmingEventHandler {
         boolean prev = IS_HANDLING_BREAK.get();
         IS_HANDLING_BREAK.set(true);
         try {
-            BlockEvent.BreakEvent checkEvent = new BlockEvent.BreakEvent(level, pos, level.getBlockState(pos), serverPlayer);
+            BreakBlockEvent checkEvent = new BreakBlockEvent(level, pos, level.getBlockState(pos), serverPlayer);
             return !net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(checkEvent).isCanceled();
         } finally {
             IS_HANDLING_BREAK.set(prev);
@@ -114,7 +115,7 @@ public class FarmingEventHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onBlockBreak(BlockEvent.BreakEvent event) {
+    public void onBlockBreak(BreakBlockEvent event) {
         if (!FarmingConfig.ENABLE_MASS_HARVEST.get()) {
             return;
         }

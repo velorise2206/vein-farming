@@ -1,7 +1,6 @@
 package com.velorise.veinfarming.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
@@ -41,7 +40,7 @@ public final class ModKeyMappings {
         if (mapping == null || mapping.isUnbound()) {
             return false;
         }
-        InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(mapping);
+        InputConstants.Key key = InputConstants.getKey(mapping.saveString());
         long window = mc.getWindow().handle();
         if (key.getType() == InputConstants.Type.KEYSYM) {
             return GLFW.glfwGetKey(window, key.getValue()) == GLFW.GLFW_PRESS;

@@ -19,6 +19,8 @@ function Use-JavaHome([string]$VariableName, [string]$Label) {
             $candidate = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
         } elseif ($VariableName -eq 'JAVA17_HOME' -and (Test-Path 'C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot\bin\java.exe')) {
             $candidate = 'C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot'
+        } elseif ($VariableName -eq 'JAVA25_HOME' -and (Test-Path 'C:\Program Files\Eclipse Adoptium\jdk-25.0.5.8-hotspot\bin\java.exe')) {
+            $candidate = 'C:\Program Files\Eclipse Adoptium\jdk-25.0.5.8-hotspot'
         }
     }
 
@@ -114,6 +116,8 @@ try {
     Invoke-Build 'NeoForge 1.21.1'  '1.21.1\neoforge'  'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'Fabric 1.21.1'    '1.21.1\fabric'    'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'Fabric 1.21.11'   '1.21.11\fabric'   'JAVA21_HOME' 'JDK 21'
+    Invoke-Build 'NeoForge 26.1.2'  '26.1\neoforge'    'JAVA25_HOME' 'JDK 25'
+    Invoke-Build 'Fabric 26.1.2'    '26.1\fabric'      'JAVA25_HOME' 'JDK 25'
 
     $forge1201Jar = Get-LatestReleaseJar `
         (Join-Path $Root '1.20.1\forge\build\libs') `
@@ -140,6 +144,16 @@ try {
         'vein_farming-fabric-1.21.11-*.jar' `
         'Fabric 1.21.11'
 
+    $neoForge261Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.1\neoforge\build\libs') `
+        'vein_farming-26.1.2-neoforge-*.jar' `
+        'NeoForge 26.1.2'
+
+    $fabric261Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.1\fabric\build\libs') `
+        'vein_farming-26.1.2-fabric-*.jar' `
+        'Fabric 26.1.2'
+
     Write-Host ""
     Write-Host "Copying artifacts to release directory..." -ForegroundColor Cyan
     Copy-ReleaseJar $forge1201Jar     'Forge 1.20.1'
@@ -147,6 +161,8 @@ try {
     Copy-ReleaseJar $neoForge121Jar   'NeoForge 1.21.1'
     Copy-ReleaseJar $fabric121Jar     'Fabric 1.21.1'
     Copy-ReleaseJar $fabric12111Jar   'Fabric 1.21.11'
+    Copy-ReleaseJar $neoForge261Jar   'NeoForge 26.1.2'
+    Copy-ReleaseJar $fabric261Jar     'Fabric 26.1.2'
 
     $gameModsDir = 'C:\Users\hunga\AppData\Roaming\.minecraft\versions\neoforge 1.21.1\mods'
     if (Test-Path $gameModsDir) {
@@ -156,7 +172,7 @@ try {
     }
 
     Write-Host ""
-    Write-Host "All 5 builds completed successfully!" -ForegroundColor Green
+    Write-Host "All 7 builds completed successfully!" -ForegroundColor Green
     Write-Host "Release directory: $OutputDirectory" -ForegroundColor Green
 }
 finally {

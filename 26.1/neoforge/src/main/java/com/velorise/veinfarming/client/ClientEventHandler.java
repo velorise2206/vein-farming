@@ -34,7 +34,7 @@ public class ClientEventHandler {
             Component msg = newState
                     ? Component.translatable("message.vein_farming.smart_plant.enabled").withStyle(ChatFormatting.GREEN)
                     : Component.translatable("message.vein_farming.smart_plant.disabled").withStyle(ChatFormatting.RED);
-            mc.player.displayClientMessage(msg, true);
+            mc.player.sendOverlayMessage(msg);
         }
 
         boolean currentActive = ModKeyMappings.isKeyActive();

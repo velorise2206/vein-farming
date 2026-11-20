@@ -5,10 +5,9 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.velorise.veinfarming.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.BlockOutlineRenderState;
+import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -20,13 +19,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CocoaBlock;
-import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,15 +70,15 @@ public class StandaloneHighlightRenderer {
 
     public static final StandaloneHighlightRenderer INSTANCE = new StandaloneHighlightRenderer();
 
-    public static boolean onBlockOutline(WorldRenderContext context, BlockOutlineRenderState outlineState) {
+    public static boolean onBlockOutline(LevelRenderContext context, BlockOutlineRenderState outlineState) {
         return INSTANCE.handleBlockOutline(context, outlineState);
     }
 
-    public static void onRenderWorld(WorldRenderContext context) {
+    public static void onRenderWorld(LevelRenderContext context) {
         INSTANCE.handleRenderWorld(context);
     }
 
-    public boolean handleBlockOutline(WorldRenderContext context, BlockOutlineRenderState outlineState) {
+    public boolean handleBlockOutline(LevelRenderContext context, BlockOutlineRenderState outlineState) {
         if (!FarmingConfig.STANDALONE_PREVIEW.get()) {
             return true;
         }
@@ -182,7 +180,7 @@ public class StandaloneHighlightRenderer {
         return false;
     }
 
-    public void handleRenderWorld(WorldRenderContext context) {
+    public void handleRenderWorld(LevelRenderContext context) {
 
         if (!FarmingConfig.STANDALONE_PREVIEW.get()) {
             return;
@@ -447,7 +445,7 @@ public class StandaloneHighlightRenderer {
             return;
         }
 
-        PoseStack poseStack = context.matrices();
+        PoseStack poseStack = context.poseStack();
         if (poseStack == null) {
             return;
         }
@@ -525,72 +523,43 @@ public class StandaloneHighlightRenderer {
         poseStack.popPose();
         bufferSource.endBatch(RenderTypes.lines());
 
-        // Render faded 3D ghost block preview of Farmland (and planned Water Holes) when holding a hoe
+        // Render translucent 3D ghost preview for Farmland (and planned Water Holes) when holding a hoe
         if (isHoe && FarmingConfig.GHOST_FARMLAND_PREVIEW.get() && !previewBlocks.isEmpty()) {
-            VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderTypes.translucentMovingBlock());
-            FadedVertexConsumer waterFadedConsumer = new FadedVertexConsumer(translucentConsumer, 0.65f);
-            MultiBufferSource waterFadedBuffer = type -> waterFadedConsumer;
-            FadedVertexConsumer wetFadedConsumer = new FadedVertexConsumer(translucentConsumer, 0.70f);
-            MultiBufferSource wetFadedBuffer = type -> wetFadedConsumer;
-            FadedVertexConsumer dryFadedConsumer = new FadedVertexConsumer(translucentConsumer, 0.50f);
-            MultiBufferSource dryFadedBuffer = type -> dryFadedConsumer;
-
+            VertexConsumer quadConsumer = bufferSource.getBuffer(RenderTypes.debugQuads());
+            poseStack.pushPose();
             for (BlockPos pos : previewBlocks) {
                 BlockState targetState = level.getBlockState(pos);
                 VoxelShape shape = targetState.getShape(level, pos);
                 double blockTop = shape.isEmpty() ? 1.0 : shape.max(Direction.Axis.Y);
 
                 if (waterHoleSet.contains(pos)) {
-                    // Render translucent water hole preview (using Light Blue Stained Glass model for fluid rendering compatibility)
-                    double yOffset = (blockTop - 1.0) + 0.003;
-                    BlockState waterGhost = Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState();
-                    MultiBufferSource fadedBuffer = waterFadedBuffer;
-
-                    poseStack.pushPose();
-                    poseStack.translate(pos.getX() - camPos.x + 0.5, pos.getY() - camPos.y + yOffset, pos.getZ() - camPos.z + 0.5);
-                    poseStack.scale(1.002f, 1.0f, 1.002f);
-                    poseStack.translate(-0.5, 0.0, -0.5);
-                    int light = LevelRenderer.getLightColor(level, pos.above());
-                    mc.getBlockRenderer().renderSingleBlock(
-                            waterGhost,
-                            poseStack,
-                            fadedBuffer,
-                            light,
-                            net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY
-                    );
-                    poseStack.popPose();
+                    double topY = pos.getY() + blockTop + 0.003;
+                    net.minecraft.world.phys.AABB waterBox = new net.minecraft.world.phys.AABB(
+                            pos.getX() - 0.001, pos.getY(), pos.getZ() - 0.001,
+                            pos.getX() + 1.001, topY, pos.getZ() + 1.001
+                    ).move(-camPos.x, -camPos.y, -camPos.z);
+                    renderFilledBox(poseStack, quadConsumer, waterBox, 0.15f, 0.65f, 1.0f, 0.40f);
                 } else {
-                    // Farmland model is 0.9375 (15/16) tall. Elevate so top face sits 0.003 above the block surface (eliminating grass occlusion and dirt path z-fighting)
-                    double yOffset = (blockTop - 0.9375) + 0.003;
-
                     boolean hasWater = FarmingManager.isNearWater(level, pos) || FarmingManager.isHydratedByHoles(pos, plannedWaterHoles);
-                    BlockState farmlandState = Blocks.FARMLAND.defaultBlockState()
-                            .setValue(FarmBlock.MOISTURE, hasWater ? 7 : 0);
-                    MultiBufferSource fadedBuffer = hasWater ? wetFadedBuffer : dryFadedBuffer;
-
-                    poseStack.pushPose();
-                    poseStack.translate(pos.getX() - camPos.x + 0.5, pos.getY() - camPos.y + yOffset, pos.getZ() - camPos.z + 0.5);
-                    poseStack.scale(1.002f, 1.0f, 1.002f);
-                    poseStack.translate(-0.5, 0.0, -0.5);
-                    int light = LevelRenderer.getLightColor(level, pos.above());
-                    mc.getBlockRenderer().renderSingleBlock(
-                            farmlandState,
-                            poseStack,
-                            fadedBuffer,
-                            light,
-                            net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY
-                    );
-                    poseStack.popPose();
+                    double topY = pos.getY() + blockTop + 0.003;
+                    net.minecraft.world.phys.AABB farmlandBox = new net.minecraft.world.phys.AABB(
+                            pos.getX() - 0.001, topY - 0.9375, pos.getZ() - 0.001,
+                            pos.getX() + 1.001, topY, pos.getZ() + 1.001
+                    ).move(-camPos.x, -camPos.y, -camPos.z);
+                    if (hasWater) {
+                        renderFilledBox(poseStack, quadConsumer, farmlandBox, 0.30f, 0.20f, 0.12f, 0.38f);
+                    } else {
+                        renderFilledBox(poseStack, quadConsumer, farmlandBox, 0.60f, 0.40f, 0.22f, 0.30f);
+                    }
                 }
             }
-            bufferSource.endBatch(RenderTypes.translucentMovingBlock());
+            poseStack.popPose();
+            bufferSource.endBatch(RenderTypes.debugQuads());
         }
 
-        // Render faded ghost block preview of the exact plant/sapling
+        // Render translucent 3D ghost preview for planted crops/saplings
         if (ghostPlantState != null && !previewBlocks.isEmpty()) {
-            VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderTypes.translucentMovingBlock());
-            FadedVertexConsumer fadedConsumer = new FadedVertexConsumer(translucentConsumer, 0.45f);
-            MultiBufferSource fadedBuffer = type -> fadedConsumer;
+            VertexConsumer quadConsumer = bufferSource.getBuffer(RenderTypes.debugQuads());
             BlockPos originSoilPos = FarmingManager.isValidSoilForSeed(activeSeed, clickedState, level, clickedPos) ? clickedPos : clickedPos.below();
             Block mainCropBlock = FarmingManager.getCropBlock(activeSeed);
             Block offCropBlock = FarmingManager.getCropBlock(offItem);
@@ -600,45 +569,32 @@ public class StandaloneHighlightRenderer {
                 evenIsMain = FarmingManager.determineIntercropPhase(level, originSoilPos, player.getDirection(), mainCropBlock, offCropBlock);
             }
             boolean alternateOnX = (player.getDirection().getAxis() == Direction.Axis.Z);
+            poseStack.pushPose();
             for (BlockPos pos : previewBlocks) {
-                BlockState stateToRender = ghostPlantState;
-                if (isCocoaPlanting) {
-                    Direction facing = Direction.NORTH;
-                    for (Direction d : Direction.Plane.HORIZONTAL) {
-                        if (FarmingManager.isJungleLog(level.getBlockState(pos.relative(d)))) {
-                            facing = d;
-                            break;
-                        }
-                    }
-                    stateToRender = Blocks.COCOA.defaultBlockState().setValue(CocoaBlock.FACING, facing).setValue(CocoaBlock.AGE, 0);
-                } else if (ghostOffState != null) {
+                boolean isMainRow = true;
+                if (!isCocoaPlanting && ghostOffState != null) {
                     int rowCoord = alternateOnX ? (pos.getX() - originSoilPos.getX()) : (pos.getZ() - originSoilPos.getZ());
-                    boolean isMainRow = (Math.floorMod(rowCoord, 2) == 0) ? evenIsMain : !evenIsMain;
-                    stateToRender = isMainRow ? ghostPlantState : ghostOffState;
+                    isMainRow = (Math.floorMod(rowCoord, 2) == 0) ? evenIsMain : !evenIsMain;
                 }
-                if (stateToRender == null) continue;
-
                 BlockPos plantPos = isCocoaPlanting ? pos : pos.above();
-                poseStack.pushPose();
-                poseStack.translate(plantPos.getX() - camPos.x, plantPos.getY() - camPos.y, plantPos.getZ() - camPos.z);
-                int light = LevelRenderer.getLightColor(level, plantPos);
-                mc.getBlockRenderer().renderSingleBlock(
-                        stateToRender,
-                        poseStack,
-                        fadedBuffer,
-                        light,
-                        net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY
-                );
-                poseStack.popPose();
+                net.minecraft.world.phys.AABB plantBox = new net.minecraft.world.phys.AABB(
+                        plantPos.getX() + 0.15, plantPos.getY() + 0.02, plantPos.getZ() + 0.15,
+                        plantPos.getX() + 0.85, plantPos.getY() + 0.65, plantPos.getZ() + 0.85
+                ).move(-camPos.x, -camPos.y, -camPos.z);
+                if (isMainRow) {
+                    renderFilledBox(poseStack, quadConsumer, plantBox, 0.35f, 0.85f, 0.30f, 0.28f);
+                } else {
+                    renderFilledBox(poseStack, quadConsumer, plantBox, 0.90f, 0.80f, 0.25f, 0.28f);
+                }
             }
-            bufferSource.endBatch(RenderTypes.translucentMovingBlock());
+            poseStack.popPose();
+            bufferSource.endBatch(RenderTypes.debugQuads());
         }
 
         // Render translucent 3D ghost fruits (Melon / Pumpkin) on the reserved fruit spots
         if (isPlanting && FarmingManager.isFruitSeed(activeSeed) && !previewBlocks.isEmpty()) {
             Block fruitBlock = FarmingManager.getFruitForSeed(activeSeed);
             if (fruitBlock != null) {
-                BlockState fruitState = fruitBlock.defaultBlockState();
                 Set<BlockPos> fruitSpots = new HashSet<>();
                 Set<BlockPos> stemSoilSet = new HashSet<>(previewBlocks);
 
@@ -659,24 +615,21 @@ public class StandaloneHighlightRenderer {
                 }
 
                 if (!fruitSpots.isEmpty()) {
-                    VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderTypes.translucentMovingBlock());
-                    FadedVertexConsumer fadedFruitConsumer = new FadedVertexConsumer(translucentConsumer, 0.35f);
-                    MultiBufferSource fadedFruitBuffer = type -> fadedFruitConsumer;
-
+                    VertexConsumer quadConsumer = bufferSource.getBuffer(RenderTypes.debugQuads());
+                    boolean isMelon = fruitBlock == Blocks.MELON;
+                    float fr = isMelon ? 0.50f : 0.90f;
+                    float fg = isMelon ? 0.80f : 0.52f;
+                    float fb = isMelon ? 0.25f : 0.15f;
+                    poseStack.pushPose();
                     for (BlockPos fruitPos : fruitSpots) {
-                        poseStack.pushPose();
-                        poseStack.translate(fruitPos.getX() - camPos.x, fruitPos.getY() - camPos.y, fruitPos.getZ() - camPos.z);
-                        int light = LevelRenderer.getLightColor(level, fruitPos);
-                        mc.getBlockRenderer().renderSingleBlock(
-                                fruitState,
-                                poseStack,
-                                fadedFruitBuffer,
-                                light,
-                                net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY
-                        );
-                        poseStack.popPose();
+                        net.minecraft.world.phys.AABB fruitBox = new net.minecraft.world.phys.AABB(
+                                fruitPos.getX() + 0.05, fruitPos.getY() + 0.05, fruitPos.getZ() + 0.05,
+                                fruitPos.getX() + 0.95, fruitPos.getY() + 0.95, fruitPos.getZ() + 0.95
+                        ).move(-camPos.x, -camPos.y, -camPos.z);
+                        renderFilledBox(poseStack, quadConsumer, fruitBox, fr, fg, fb, 0.28f);
                     }
-                    bufferSource.endBatch(RenderTypes.translucentMovingBlock());
+                    poseStack.popPose();
+                    bufferSource.endBatch(RenderTypes.debugQuads());
                 }
             }
         }
@@ -767,40 +720,50 @@ public class StandaloneHighlightRenderer {
         consumer.addVertex(matrix, x2, y2, z2).setColor(r, g, b, a).setNormal(dx, dy, dz).setLineWidth(1.0F);
     }
 
-    private static class FadedVertexConsumer implements VertexConsumer {
-        private final VertexConsumer delegate;
-        private final float alpha;
+    private static void renderFilledBox(PoseStack poseStack, VertexConsumer consumer, net.minecraft.world.phys.AABB box,
+                                        float r, float g, float b, float a) {
+        org.joml.Matrix4f matrix = poseStack.last().pose();
+        float minX = (float) box.minX;
+        float minY = (float) box.minY;
+        float minZ = (float) box.minZ;
+        float maxX = (float) box.maxX;
+        float maxY = (float) box.maxY;
+        float maxZ = (float) box.maxZ;
 
-        public FadedVertexConsumer(VertexConsumer delegate, float alpha) {
-            this.delegate = delegate;
-            this.alpha = alpha;
-        }
+        // Bottom (Y-)
+        consumer.addVertex(matrix, minX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, minX, minY, maxZ).setColor(r, g, b, a);
 
-        @Override public VertexConsumer addVertex(float x, float y, float z) { return delegate.addVertex(x, y, z); }
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return delegate.setColor(r, g, b, (int) (a * alpha)); }
-        @Override
-        public VertexConsumer setColor(int color) {
-            int a = (color >> 24) & 0xFF;
-            int r = (color >> 16) & 0xFF;
-            int g = (color >> 8) & 0xFF;
-            int b = color & 0xFF;
-            int newA = (int) (a * alpha);
-            return delegate.setColor((newA << 24) | (r << 16) | (g << 8) | b);
-        }
-        @Override public VertexConsumer setUv(float u, float v) { return delegate.setUv(u, v); }
-        @Override public VertexConsumer setUv1(int u, int v) { return delegate.setUv1(u, v); }
-        @Override public VertexConsumer setUv2(int u, int v) { return delegate.setUv2(u, v); }
-        @Override public VertexConsumer setNormal(float x, float y, float z) { return delegate.setNormal(x, y, z); }
-        @Override public VertexConsumer setLineWidth(float width) { return delegate.setLineWidth(width); }
+        // Top (Y+)
+        consumer.addVertex(matrix, minX, maxY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, minX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, maxY, minZ).setColor(r, g, b, a);
 
-        @Override
-        public void putBulkData(PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float r, float g, float b, float a, int light, int overlay) {
-            delegate.putBulkData(pose, quad, r, g, b, a * alpha, light, overlay);
-        }
+        // North (Z-)
+        consumer.addVertex(matrix, minX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, minX, maxY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, maxY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, minY, minZ).setColor(r, g, b, a);
 
-        @Override
-        public void putBulkData(PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float[] baseColor, float r, float g, float b, float a, int[] lightmap, int overlay) {
-            delegate.putBulkData(pose, quad, baseColor, r, g, b, a * alpha, lightmap, overlay);
-        }
+        // South (Z+)
+        consumer.addVertex(matrix, minX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, minX, maxY, maxZ).setColor(r, g, b, a);
+
+        // West (X-)
+        consumer.addVertex(matrix, minX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, minX, minY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, minX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, minX, maxY, minZ).setColor(r, g, b, a);
+
+        // East (X+)
+        consumer.addVertex(matrix, maxX, minY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, maxY, minZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, maxY, maxZ).setColor(r, g, b, a);
+        consumer.addVertex(matrix, maxX, minY, maxZ).setColor(r, g, b, a);
     }
 }

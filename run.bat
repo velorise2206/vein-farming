@@ -15,14 +15,16 @@ echo   2) Fabric 1.21.1    (Java 21)
 echo   3) Fabric 1.21.11   (Java 21)
 echo   4) Forge 1.20.1     (Java 17)
 echo   5) Fabric 1.20.1    (Java 17)
+echo   6) NeoForge 26.1.2  (Java 25)
+echo   7) Fabric 26.1.2    (Java 25)
 echo.
 echo   0) Exit
 echo ---------------------------------------------------------------------
-set /p "CHOICE=Select a loader/version [1-5]: "
+set /p "CHOICE=Select a loader/version [1-7]: "
 
 :HANDLE_CHOICE
 if "%CHOICE%"=="1" (
-    call "%~dp0scripts\run-neoforge.bat"
+    call "%~dp0scripts\run-neoforge.bat" 1.21.1
     exit /b %ERRORLEVEL%
 )
 if "%CHOICE%"=="2" (
@@ -39,6 +41,14 @@ if "%CHOICE%"=="4" (
 )
 if "%CHOICE%"=="5" (
     call "%~dp0scripts\run-fabric.bat" 3
+    exit /b %ERRORLEVEL%
+)
+if "%CHOICE%"=="6" (
+    call "%~dp0scripts\run-neoforge.bat" 26.1
+    exit /b %ERRORLEVEL%
+)
+if "%CHOICE%"=="7" (
+    call "%~dp0scripts\run-fabric.bat" 4
     exit /b %ERRORLEVEL%
 )
 

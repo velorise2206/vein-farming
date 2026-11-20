@@ -4,8 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.velorise.veinfarming.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -645,7 +645,7 @@ public class StandaloneHighlightRenderer {
 
             if (!worldGhostBlocks.isEmpty()) {
                 ModelBlockRenderer blockRenderer = new ModelBlockRenderer(false, false, mc.getBlockColors());
-                VertexConsumer blockBuffer = bufferSource.getBuffer(Sheets.translucentBlockSheet());
+                VertexConsumer blockBuffer = bufferSource.getBuffer(RenderTypes.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true));
 
                 for (GhostBlock ghost : worldGhostBlocks) {
                     BlockStateModel model = mc.getModelManager().getBlockStateModelSet().get(ghost.state());

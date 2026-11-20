@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.velorise.veinfarming.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -555,7 +556,7 @@ public class StandaloneHighlightRenderer {
 
         // Render faded 3D ghost block preview of Farmland (and planned Water Holes) when holding a hoe
         if (isHoe && FarmingConfig.GHOST_FARMLAND_PREVIEW.get() && !previewBlocks.isEmpty()) {
-            VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderType.translucent());
+            VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true));
             FadedVertexConsumer waterFadedConsumer = new FadedVertexConsumer(translucentConsumer, 0.65f);
             MultiBufferSource waterFadedBuffer = type -> waterFadedConsumer;
             FadedVertexConsumer wetFadedConsumer = new FadedVertexConsumer(translucentConsumer, 0.70f);
@@ -609,12 +610,12 @@ public class StandaloneHighlightRenderer {
                     poseStack.popPose();
                 }
             }
-            bufferSource.endBatch(RenderType.translucent());
+            bufferSource.endBatch(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true));
         }
 
         // Render faded ghost block preview of the exact plant/sapling
         if (ghostPlantState != null && !previewBlocks.isEmpty()) {
-            VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderType.translucent());
+            VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true));
             FadedVertexConsumer fadedConsumer = new FadedVertexConsumer(translucentConsumer, 0.45f);
             MultiBufferSource fadedBuffer = type -> fadedConsumer;
             BlockPos originSoilPos = FarmingManager.isValidSoilForSeed(activeSeed, clickedState, level, clickedPos) ? clickedPos : clickedPos.below();
@@ -664,7 +665,7 @@ public class StandaloneHighlightRenderer {
                 );
                 poseStack.popPose();
             }
-            bufferSource.endBatch(RenderType.translucent());
+            bufferSource.endBatch(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true));
         }
 
         // Render translucent 3D ghost fruits (Melon / Pumpkin) on the reserved fruit spots
@@ -692,7 +693,7 @@ public class StandaloneHighlightRenderer {
                 }
 
                 if (!fruitSpots.isEmpty()) {
-                    VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderType.translucent());
+                    VertexConsumer translucentConsumer = bufferSource.getBuffer(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true));
                     FadedVertexConsumer fadedFruitConsumer = new FadedVertexConsumer(translucentConsumer, 0.35f);
                     MultiBufferSource fadedFruitBuffer = type -> fadedFruitConsumer;
 
@@ -712,7 +713,7 @@ public class StandaloneHighlightRenderer {
                         );
                         poseStack.popPose();
                     }
-                    bufferSource.endBatch(RenderType.translucent());
+                    bufferSource.endBatch(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true));
                 }
             }
         }

@@ -642,7 +642,7 @@ public class StandaloneHighlightRenderer {
             }
 
             if (!worldGhostBlocks.isEmpty()) {
-                submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentCullItemTarget(TextureAtlas.LOCATION_BLOCKS), (pose, blockBuffer) -> {
+                submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true), (pose, blockBuffer) -> {
                     ModelBlockRenderer blockRenderer = new ModelBlockRenderer(false, false, mc.getBlockColors());
                     PoseStack localStack = new PoseStack();
                     localStack.last().pose().set(pose.pose());

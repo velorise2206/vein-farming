@@ -678,7 +678,7 @@ public class StandaloneHighlightRenderer {
 
         // Submit real textured, tinted, translucent 3D block models through SubmitNodeCollector
         if (!ghostBlocks.isEmpty()) {
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentCullItemTarget(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.beaconBeam(TextureAtlas.LOCATION_BLOCKS, true), (pose, buffer) -> {
                 ModelBlockRenderer blockRenderer = new ModelBlockRenderer(false, false, mc.getBlockColors());
                 PoseStack localStack = new PoseStack();
                 localStack.last().pose().set(pose.pose());

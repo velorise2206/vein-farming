@@ -11,6 +11,7 @@ All notable changes to **Vein Farming** are documented in this file.
 - **Anti-Flicker & Z-Fighting Fix:** Re-enabled Backface Culling, batched geometry into a single submit pass, and fine-tuned offsets (+0.004/+0.006) to eliminate flickering.
 - **Cover Layer Offset:** Preview wireframes and ghost blocks automatically elevate above low surface covers (snow layers, leaf litter, petals).
 - **Block Outline Fix:** Preserved vanilla block selection outline when holding tools/seeds near non-farm blocks; added destroy outline fallback for 1-block column crops (cactus, sugar cane, bamboo).
+- **Smart Enclosed Water Holes:** Improved irrigation algorithm (`isWaterHoleContained`) to require solid surrounding walls, preventing water spills on slopes, cliffs, and terraces.
 - **NeoForge Fluid API:** Integrated NeoForge Transfer API for fluid container interoperability.
 
 ---

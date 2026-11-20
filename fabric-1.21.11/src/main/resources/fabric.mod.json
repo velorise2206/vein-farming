@@ -5,11 +5,11 @@
   "name": "Vein Farming: Universal Farming QoL Toolkit",
   "description": "Universal AOE farming mod with Area Tilling, Smart Water Bucket Irrigation, Smart Mass Planting, and AOE Bone Meal fertilizing.",
   "authors": [
-    "hungbbdzz"
+    "Velorise"
   ],
   "contact": {
-    "homepage": "https://github.com/hungbbdzz/vein-farming",
-    "sources": "https://github.com/hungbbdzz/vein-farming"
+    "homepage": "https://github.com/velorise2206/vein-farming",
+    "sources": "https://github.com/velorise2206/vein-farming"
   },
   "license": "MIT",
   "icon": "logo.png",

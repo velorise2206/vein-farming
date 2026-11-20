@@ -30,6 +30,7 @@ import net.minecraftforge.event.level.BlockEvent;
 public class FarmingEventHandler {
 
     private static final ThreadLocal<Boolean> IS_HANDLING_BREAK = ThreadLocal.withInitial(() -> false);
+    private static final ThreadLocal<Boolean> IS_CHECKING_CLAIM = ThreadLocal.withInitial(() -> false);
     private static final ThreadLocal<Boolean> IS_HANDLING_RIGHT_CLICK = ThreadLocal.withInitial(() -> false);
     private static final java.util.Map<java.util.UUID, Long> LAST_RIGHT_CLICK_TICK = new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -58,7 +59,7 @@ public class FarmingEventHandler {
             return;
         }
 
-        if (living.fallDistance > 0.0F) {
+        if (living.fallDistance > 0.0F && living.getDeltaMovement().y < -0.05) {
             Level level = living.level();
             double checkDepth = Math.max(0.6, -living.getDeltaMovement().y + 0.2);
             AABB box = living.getBoundingBox().expandTowards(0, -checkDepth, 0);
@@ -70,18 +71,17 @@ public class FarmingEventHandler {
             int maxZ = Mth.floor(box.maxZ);
 
             boolean landsOnFarmland = false;
-            for (int y = minY; y <= maxY; y++) {
-                for (int x = minX; x <= maxX; x++) {
+            BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+            for (int y = minY; y <= maxY && !landsOnFarmland; y++) {
+                for (int x = minX; x <= maxX && !landsOnFarmland; x++) {
                     for (int z = minZ; z <= maxZ; z++) {
-                        BlockState state = level.getBlockState(new BlockPos(x, y, z));
+                        BlockState state = level.getBlockState(mutablePos.set(x, y, z));
                         if (PlantClassifier.isFarmland(state)) {
                             landsOnFarmland = true;
                             break;
                         }
                     }
-                    if (landsOnFarmland) break;
                 }
-                if (landsOnFarmland) break;
             }
 
             if (landsOnFarmland) {
@@ -96,7 +96,7 @@ public class FarmingEventHandler {
             return;
         }
 
-        if (IS_HANDLING_BREAK.get()) {
+        if (IS_CHECKING_CLAIM.get() || IS_HANDLING_BREAK.get()) {
             return;
         }
 
@@ -312,6 +312,32 @@ public class FarmingEventHandler {
             VeinFarmingMod.LOGGER.error("Vein Farming: Error during right-click interaction handling", t);
         } finally {
             IS_HANDLING_RIGHT_CLICK.set(false);
+        }
+    }
+
+    public static boolean canModifyBlock(Player player, Level level, BlockPos pos) {
+        if (player == null || level == null || pos == null) {
+            return false;
+        }
+        if (level.isClientSide()) {
+            return true;
+        }
+        if (!level.mayInteract(player, pos)) {
+            return false;
+        }
+        if (IS_CHECKING_CLAIM.get()) {
+            return true;
+        }
+        try {
+            IS_CHECKING_CLAIM.set(true);
+            BlockState state = level.getBlockState(pos);
+            var event = new net.minecraftforge.event.level.BlockEvent.BreakEvent(level, pos, state, player);
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+            return !event.isCanceled();
+        } catch (Throwable t) {
+            return true;
+        } finally {
+            IS_CHECKING_CLAIM.set(false);
         }
     }
 

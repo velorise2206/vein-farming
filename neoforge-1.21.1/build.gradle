@@ -36,7 +36,6 @@ neoForge {
 }
 
 dependencies {
-    compileOnly files('libs/liteminer.jar')
 }
 
 tasks.withType(ProcessResources).configureEach {

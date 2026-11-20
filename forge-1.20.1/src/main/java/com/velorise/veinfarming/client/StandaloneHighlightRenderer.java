@@ -229,13 +229,6 @@ public class StandaloneHighlightRenderer {
             return;
         }
 
-        // Check activation condition: LiteMiner key, FTB Ultimine key, or dedicated key / Shift fallback in standalone mode
-        boolean active = isClientVeinActive(player);
-        if (!active) {
-            clearCache();
-            return;
-        }
-
         // Check if cached search result is still valid (throttle search to at most once per 250ms when looking at same block)
         long now = System.currentTimeMillis();
         boolean isAttacking = mc.options.keyAttack.isDown();

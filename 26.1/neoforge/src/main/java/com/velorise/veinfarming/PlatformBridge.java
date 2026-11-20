@@ -13,10 +13,18 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.PlayerInventoryWrapper;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public final class PlatformBridge {
     private PlatformBridge() {}
@@ -30,18 +38,74 @@ public final class PlatformBridge {
     }
 
     public static boolean hasFluidWater(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return false;
+        try {
+            ResourceHandler<FluidResource> fluidHandler = ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM);
+            if (fluidHandler != null) {
+                FluidResource water = FluidResource.of(Fluids.WATER);
+                for (int i = 0; i < fluidHandler.size(); i++) {
+                    if (water.equals(fluidHandler.getResource(i)) && fluidHandler.getAmountAsLong(i) >= FluidType.BUCKET_VOLUME) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
         return false;
     }
 
     public static int getWaterBuckets(ItemStack stack) {
-        return isDirectWaterBucket(stack) ? stack.getCount() : 0;
+        if (stack == null || stack.isEmpty()) return 0;
+        if (isDirectWaterBucket(stack)) {
+            return stack.getCount();
+        }
+        int count = 0;
+        try {
+            ResourceHandler<FluidResource> fluidHandler = ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM);
+            if (fluidHandler != null) {
+                FluidResource water = FluidResource.of(Fluids.WATER);
+                for (int i = 0; i < fluidHandler.size(); i++) {
+                    if (water.equals(fluidHandler.getResource(i))) {
+                        count += (int) (fluidHandler.getAmountAsLong(i) / FluidType.BUCKET_VOLUME);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return count;
     }
 
     public static boolean drainOneFluidWaterOffhand(Player player, ItemStack stack) {
+        if (isDirectWaterBucket(stack)) return false;
+        try {
+            ItemAccess access = ItemAccess.forPlayerInteraction(player, InteractionHand.OFF_HAND).oneByOne();
+            ResourceHandler<FluidResource> fluidHandler = access.getCapability(Capabilities.Fluid.ITEM);
+            if (fluidHandler != null) {
+                try (Transaction tx = Transaction.openRoot()) {
+                    int extracted = fluidHandler.extract(FluidResource.of(Fluids.WATER), FluidType.BUCKET_VOLUME, tx);
+                    if (extracted >= FluidType.BUCKET_VOLUME) {
+                        tx.commit();
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
         return false;
     }
 
     public static boolean drainOneFluidWaterSlot(Player player, int slotIndex, ItemStack stack) {
+        if (isDirectWaterBucket(stack)) return false;
+        try {
+            ItemAccess access = ItemAccess.forHandlerIndex(PlayerInventoryWrapper.of(player), slotIndex).oneByOne();
+            ResourceHandler<FluidResource> fluidHandler = access.getCapability(Capabilities.Fluid.ITEM);
+            if (fluidHandler != null) {
+                try (Transaction tx = Transaction.openRoot()) {
+                    int extracted = fluidHandler.extract(FluidResource.of(Fluids.WATER), FluidType.BUCKET_VOLUME, tx);
+                    if (extracted >= FluidType.BUCKET_VOLUME) {
+                        tx.commit();
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
         return false;
     }
 

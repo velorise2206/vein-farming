@@ -4,16 +4,16 @@ All notable changes to **Vein Farming** are documented in this file.
 
 ---
 
-## [2.0.3] — Claim Protection, Performance & Cleanup
+## 
 
-- Enforced per-block claim protection (`BlockEvent.BreakEvent` / `PlayerBlockBreakEvents.BEFORE`) across mass harvest, destroy, planting, tilling, water-hole digging, and flower bone meal.
-- Added chunk-loaded guards (`level.isLoaded`) to all BFS scans to prevent synchronous chunk loading at chunk borders.
-- Optimized server farmland fall-cushion checks with `MutableBlockPos`, downward-velocity filtering, and cached `PlantClassifier.isFarmland`.
-- Added early fast-path exit in `StandaloneHighlightRenderer` when the activation key is not held.
-- Fixed stuck/false activation preview in Standalone mode by polling live GLFW key state (`ModKeyMappings.isKeyActive`), synced companion-key gating between client and server, and excluded non-tillable blocks (moss, mud, podzol, mycelium) from hoe preview.
-- Filtered decorative/storage false positives (crates, pots, lamps, logs, planks, carved pumpkins) and cached fallback lookups in `PlantClassifier`.
-- Upgraded Smart Water Bucket Irrigation (`PlantingAlgorithms.isWaterHoleContained`) to require solid enclosure on all 4 horizontal sides plus floor, preventing water holes from spilling off edges, slopes, or non-solid blocks.
-- Unified NeoForge 1.21.1 `LiteMinerCompat` on reflection, removed bundled `libs/liteminer.jar`, updated mod metadata to `Velorise`/`velorise2206`, and added multi-loader GitHub Actions CI.
+**`v2.0.3` — Claim Protection, Performance & Algorithm Fixes**
+
+* Enforced per-block claim protection (`BlockEvent.BreakEvent` / `PlayerBlockBreakEvents.BEFORE`) across mass harvest, destroy, planting, tilling, water-hole digging, and flower bone meal.
+* Upgraded Smart Water Bucket Irrigation to require solid floor and 4 enclosing horizontal blocks so water never spills off edges or slopes.
+* Fixed Standalone preview getting stuck active without holding Shift by polling live GLFW key state, synced client-server activation rules, and excluded non-tillable blocks (moss, mud, podzol, mycelium) from hoe preview.
+* Fixed melon/pumpkin stem parity near water (requiring an open adjacent fruit spot), added upper-block clearance/claim checks for 2-tall flowers (`DoublePlantBlock`), and enforced complete 4-sapling batches for strictly 2×2 saplings (Dark Oak / Pale Oak).
+* Added `level.isLoaded` guards to all BFS scans, optimized server farmland tick (`MutableBlockPos` + `FARMLAND_CACHE`), and added early fast-path exit in `StandaloneHighlightRenderer`.
+* Filtered decorative/storage false positives in `PlantClassifier`, unified NeoForge `LiteMinerCompat` on reflection (removed `libs/liteminer.jar`), updated metadata to `Velorise`/`velorise2206`, and added multi-loader GitHub Actions CI.
 
 ---
 
@@ -42,4 +42,3 @@ All notable changes to **Vein Farming** are documented in this file.
 - 2-Pass Hybrid Irrigation Grid for optimal water hole placement with 100% hydration guarantee.
 - Smart mass planting with spatial geometry layouts (cross, checkerboard, spacing filters).
 - Mass tilling, AOE bone meal, stem-protected fruit harvesting, and batch composting.
-

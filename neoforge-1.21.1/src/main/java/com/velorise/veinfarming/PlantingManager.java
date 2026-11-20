@@ -129,11 +129,49 @@ public class PlantingManager {
 
         boolean alternateOnX = (facing.getAxis() == Direction.Axis.Z);
 
+        // For strictly 2x2 saplings (Dark Oak, Pale Oak), only plant complete 4-sapling groups
+        // and never leave partial 1-3 sapling groups that can never grow.
+        int effectiveMaxLimit = maxLimit;
+        if (!isIntercropping && PlantClassifier.isStrictly2x2Sapling(cropBlock)) {
+            int available = player.isCreative() ? maxLimit : countAvailableSeeds(player, hand, seedItem);
+            effectiveMaxLimit = (Math.min(available, maxLimit) / 4) * 4;
+            if (effectiveMaxLimit < 4) {
+                return false;
+            }
+            List<BlockPos> atomicGroups = new ArrayList<>();
+            BlockState defaultSaplingState = cropBlock.defaultBlockState();
+            for (int i = 0; i + 3 < sorted.size() && atomicGroups.size() + 4 <= effectiveMaxLimit; i += 4) {
+                boolean groupValid = true;
+                for (int k = 0; k < 4; k++) {
+                    BlockPos pPos = sorted.get(i + k);
+                    BlockPos pAbove = pPos.above();
+                    BlockState pSoil = level.getBlockState(pPos);
+                    BlockState pAboveState = level.getBlockState(pAbove);
+                    if (!PlantClassifier.isValidSoilForSeed(seedStack, pSoil, level, pPos)
+                            || !FarmingEventHandler.canModifyBlock(player, level, pAbove)
+                            || (!pAboveState.isAir() && !pAboveState.canBeReplaced())
+                            || !defaultSaplingState.canSurvive(level, pAbove)) {
+                        groupValid = false;
+                        break;
+                    }
+                }
+                if (groupValid) {
+                    for (int k = 0; k < 4; k++) {
+                        atomicGroups.add(sorted.get(i + k));
+                    }
+                }
+            }
+            if (atomicGroups.isEmpty()) {
+                return false;
+            }
+            sorted = atomicGroups;
+        }
+
         int plantedCount = 0;
         SoundType cropSound = null;
 
         for (BlockPos soilPos : sorted) {
-            if (plantedCount >= maxLimit) {
+            if (plantedCount >= effectiveMaxLimit) {
                 break;
             }
 
@@ -173,6 +211,15 @@ public class PlantingManager {
                 BlockState placeState = currentCropBlock.getStateForPlacement(placeContext);
                 if (placeState == null) {
                     placeState = currentCropBlock.defaultBlockState();
+                }
+
+                if (currentCropBlock instanceof DoublePlantBlock) {
+                    BlockPos upper = above.above();
+                    BlockState upperState = level.getBlockState(upper);
+                    if (!FarmingEventHandler.canModifyBlock(player, level, upper)
+                            || (!upperState.isAir() && !upperState.canBeReplaced())) {
+                        continue;
+                    }
                 }
 
                 if (placeState.canSurvive(level, above)) {
@@ -619,5 +666,22 @@ public class PlantingManager {
             return targetPodPositions.subList(0, maxLimit);
         }
         return targetPodPositions;
+    }
+
+    private static int countAvailableSeeds(ServerPlayer player, InteractionHand hand, Item seedItem) {
+        int total = 0;
+        ItemStack held = player.getItemInHand(hand);
+        if (!held.isEmpty() && held.is(seedItem)) {
+            total += held.getCount();
+        }
+        if (FarmingConfig.PULL_FROM_INVENTORY.get()) {
+            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                ItemStack invStack = player.getInventory().getItem(i);
+                if (!invStack.isEmpty() && invStack.is(seedItem) && invStack != held) {
+                    total += invStack.getCount();
+                }
+            }
+        }
+        return total;
     }
 }

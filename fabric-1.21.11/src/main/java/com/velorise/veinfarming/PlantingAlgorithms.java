@@ -624,18 +624,19 @@ public class PlantingAlgorithms {
             }
         }
 
+        BlockPos refPos = originSoilPos != null ? originSoilPos : candidateSoils.get(0);
         int targetParity;
         if (existingStemCount0 > 0 || existingStemCount1 > 0) {
             targetParity = (existingStemCount0 >= existingStemCount1) ? 0 : 1;
-        } else if (originSoilPos != null) {
-            targetParity = Math.floorMod(originSoilPos.getX() + originSoilPos.getZ(), 2);
         } else {
             // Priority B: Check for nearby water within radius 6 (e.g. 9x9 farm center water block)
-            BlockPos waterPos = PlantClassifier.findNearbyWaterBlock(level, originSoilPos, 6);
+            BlockPos waterPos = PlantClassifier.findNearbyWaterBlock(level, refPos, 6);
             if (waterPos != null) {
                 int waterParity = Math.floorMod(waterPos.getX() + waterPos.getZ(), 2);
                 // Stems sit on the opposite parity of water so water block falls on a fruit spot!
                 targetParity = 1 - waterParity;
+            } else if (originSoilPos != null) {
+                targetParity = Math.floorMod(originSoilPos.getX() + originSoilPos.getZ(), 2);
             } else {
                 // Priority C: Count viable candidates for parity 0 vs 1 and pick the larger set
                 int count0 = 0;
@@ -648,20 +649,38 @@ public class PlantingAlgorithms {
             }
         }
 
-        // 2. Select candidates strictly matching targetParity
+        // 2. Select candidates strictly matching targetParity with at least 1 valid adjacent fruit spot
         List<BlockPos> result = new ArrayList<>();
         for (BlockPos soil : candidateSoils) {
             if (Math.floorMod(soil.getX() + soil.getZ(), 2) == targetParity) {
                 BlockPos above = soil.above();
                 BlockState aboveState = level.getBlockState(above);
-                if (aboveState.isAir() || aboveState.canBeReplaced()) {
+                if ((aboveState.isAir() || aboveState.canBeReplaced()) && hasAdjacentFruitSpot(level, soil)) {
                     result.add(soil);
                 }
             }
         }
 
-        result.sort(Comparator.comparingInt(p -> p.distManhattan(originSoilPos)));
+        final BlockPos sortOrigin = refPos;
+        result.sort(Comparator.comparingInt(p -> p.distManhattan(sortOrigin)));
         return result;
+    }
+
+    private static boolean hasAdjacentFruitSpot(Level level, BlockPos stemSoil) {
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            BlockPos adjSoil = stemSoil.relative(dir);
+            if (!level.isLoaded(adjSoil)) continue;
+            BlockState adjSoilState = level.getBlockState(adjSoil);
+            boolean validFruitGround = PlantClassifier.isFarmland(adjSoilState)
+                    || adjSoilState.is(net.minecraft.tags.BlockTags.DIRT)
+                    || adjSoilState.is(Blocks.GRASS_BLOCK);
+            if (!validFruitGround) continue;
+            BlockState adjAbove = level.getBlockState(adjSoil.above());
+            if (adjAbove.isAir() || adjAbove.canBeReplaced()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static BlockState findCropAtColumn(Level level, int x, int baseY, int z) {

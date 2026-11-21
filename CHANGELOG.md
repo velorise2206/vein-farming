@@ -6,7 +6,7 @@ All notable changes to **Vein Farming** are documented in this file.
 
 ## [2.2.0] — Minecraft 26.x Ports & Visual Overhaul
 
-- **Minecraft 26.x Ports:** Added full support for Minecraft 26.1, 26.2, and 26.3 on both Fabric and NeoForge (11 ports total).
+- **NeoForge 1.21.11 & 26.x Ports:** Added full support for NeoForge 1.21.11 alongside Minecraft 26.1, 26.2, and 26.3 on Fabric and NeoForge (12 ports total).
 - **Real 3D Ghost Models:** Replaced debug cubes with real textured, tinted 3D block models for tilling, water holes, seeds, and fruits.
 - **Water & Ice Transparency Fix:** Switched ghost model rendering to `beaconBeam` (`depthWrite = false`), eliminating X-ray occlusion over water, ice, and stained glass.
 - **Camera Occlusion Skip:** Automatically skips rendering ghost block models when the camera stands inside a preview block to prevent first-person view obstruction.

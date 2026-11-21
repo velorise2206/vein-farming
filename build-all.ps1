@@ -115,6 +115,7 @@ try {
     Invoke-Build 'Fabric 1.20.1'    '1.20.1\fabric'    'JAVA17_HOME' 'JDK 17'
     Invoke-Build 'NeoForge 1.21.1'  '1.21.1\neoforge'  'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'Fabric 1.21.1'    '1.21.1\fabric'    'JAVA21_HOME' 'JDK 21'
+    Invoke-Build 'NeoForge 1.21.11' '1.21.11\neoforge' 'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'Fabric 1.21.11'   '1.21.11\fabric'   'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'NeoForge 26.1.2'  '26.1\neoforge'    'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'Fabric 26.1.2'    '26.1\fabric'      'JAVA25_HOME' 'JDK 25'
@@ -142,6 +143,11 @@ try {
         (Join-Path $Root '1.21.1\fabric\build\libs') `
         'vein_farming-fabric-1.21.1-*.jar' `
         'Fabric 1.21.1'
+
+    $neoForge12111Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '1.21.11\neoforge\build\libs') `
+        'vein_farming-1.21.11-neoforge-*.jar' `
+        'NeoForge 1.21.11'
 
     $fabric12111Jar = Get-LatestReleaseJar `
         (Join-Path $Root '1.21.11\fabric\build\libs') `
@@ -184,6 +190,7 @@ try {
     Copy-ReleaseJar $fabric1201Jar    'Fabric 1.20.1'
     Copy-ReleaseJar $neoForge121Jar   'NeoForge 1.21.1'
     Copy-ReleaseJar $fabric121Jar     'Fabric 1.21.1'
+    Copy-ReleaseJar $neoForge12111Jar 'NeoForge 1.21.11'
     Copy-ReleaseJar $fabric12111Jar   'Fabric 1.21.11'
     Copy-ReleaseJar $neoForge261Jar   'NeoForge 26.1.2'
     Copy-ReleaseJar $fabric261Jar     'Fabric 26.1.2'
@@ -200,7 +207,7 @@ try {
     }
 
     Write-Host ""
-    Write-Host "All 11 builds completed successfully!" -ForegroundColor Green
+    Write-Host "All 12 builds completed successfully!" -ForegroundColor Green
     Write-Host "Release directory: $OutputDirectory" -ForegroundColor Green
 }
 finally {

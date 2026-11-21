@@ -101,6 +101,25 @@ jobs:
           name: vein-farming-1.21.11-fabric
           path: 1.21.11/fabric/build/libs/*.jar
 
+  neoforge-1-21-11:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 1.21.11/neoforge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew build --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vein-farming-1.21.11-neoforge
+          path: 1.21.11/neoforge/build/libs/*.jar
+
   fabric-26-1:
     runs-on: ubuntu-latest
     defaults:

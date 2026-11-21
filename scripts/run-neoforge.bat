@@ -12,12 +12,13 @@ echo ====================================================
 echo        Vein Farming - NeoForge Dev Client
 echo ====================================================
 echo   1) NeoForge 1.21.1   (Java 21)
-echo   2) NeoForge 26.1.2   (Java 25)
-echo   3) NeoForge 26.2     (Java 25)
-echo   4) NeoForge 26.3     (Java 25)
+echo   2) NeoForge 1.21.11  (Java 21)
+echo   3) NeoForge 26.1.2   (Java 25)
+echo   4) NeoForge 26.2     (Java 25)
+echo   5) NeoForge 26.3     (Java 25)
 echo   0) Exit
 echo ----------------------------------------------------
-set /p "CHOICE=Select version to run [1-4, default=1]: "
+set /p "CHOICE=Select version to run [1-5, default=1]: "
 if "%CHOICE%"=="" set "CHOICE=1"
 
 :HANDLE_CHOICE
@@ -25,16 +26,20 @@ if "%CHOICE%"=="1" goto :RUN_1211
 if "%CHOICE%"=="1.21.1" goto :RUN_1211
 if "%CHOICE%"=="1211" goto :RUN_1211
 
-if "%CHOICE%"=="2" goto :RUN_261
+if "%CHOICE%"=="2" goto :RUN_12111
+if "%CHOICE%"=="1.21.11" goto :RUN_12111
+if "%CHOICE%"=="12111" goto :RUN_12111
+
+if "%CHOICE%"=="3" goto :RUN_261
 if "%CHOICE%"=="26.1" goto :RUN_261
 if "%CHOICE%"=="26.1.2" goto :RUN_261
 if "%CHOICE%"=="261" goto :RUN_261
 
-if "%CHOICE%"=="3" goto :RUN_262
+if "%CHOICE%"=="4" goto :RUN_262
 if "%CHOICE%"=="26.2" goto :RUN_262
 if "%CHOICE%"=="262" goto :RUN_262
 
-if "%CHOICE%"=="4" goto :RUN_263
+if "%CHOICE%"=="5" goto :RUN_263
 if "%CHOICE%"=="26.3" goto :RUN_263
 if "%CHOICE%"=="263" goto :RUN_263
 
@@ -46,6 +51,11 @@ goto :MENU
 
 :RUN_1211
 set "TARGET_DIR=1.21.1\neoforge"
+call :SETUP_JAVA21
+goto :START_CLIENT
+
+:RUN_12111
+set "TARGET_DIR=1.21.11\neoforge"
 call :SETUP_JAVA21
 goto :START_CLIENT
 

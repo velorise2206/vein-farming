@@ -1,7 +1,7 @@
 # 🌾 Vein Farming: Universal Farming QoL Toolkit
 
 <p align="center">
-  <a href="https://modrinth.com/mod/vein-farming"><img src="https://img.shields.io/badge/Modrinth-Available_Now-00af5c?style=for-the-badge&logo=modrinth&logoColor=white" alt="Modrinth" /></a>
+  <a href="https://modrinth.com/mod/vein-farming"><img src="https://img.shields.io/badge/Modrinth-Pending_Review-orange?style=for-the-badge&logo=modrinth&logoColor=white" alt="Modrinth" /></a>
   <a href="https://www.curseforge.com/minecraft/mc-mods/vein-farming"><img src="https://img.shields.io/badge/CurseForge-Available_Now-f16436?style=for-the-badge&logo=curseforge&logoColor=white" alt="CurseForge" /></a>
   <a href="https://github.com/velorise2206/vein-farming"><img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
   <a href="https://github.com/sponsors/velorise2206"><img src="https://img.shields.io/badge/Sponsor-GitHub_Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="GitHub Sponsors" /></a>

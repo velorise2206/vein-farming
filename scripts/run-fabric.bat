@@ -11,9 +11,9 @@ cls
 echo ====================================================
 echo        Vein Farming - Fabric Dev Client
 echo ====================================================
-echo   1) Fabric 1.21.1   (Java 21)
-echo   2) Fabric 1.21.11  (Java 21)
-echo   3) Fabric 1.20.1   (Java 17)
+echo   1) Fabric 1.20.1   (Java 17)
+echo   2) Fabric 1.21.1   (Java 21)
+echo   3) Fabric 1.21.11  (Java 21)
 echo   4) Fabric 26.1.2   (Java 25)
 echo   5) Fabric 26.2     (Java 25)
 echo   6) Fabric 26.3     (Java 25)
@@ -23,17 +23,17 @@ set /p "CHOICE=Select version to run [1-6, default=1]: "
 if "%CHOICE%"=="" set "CHOICE=1"
 
 :HANDLE_CHOICE
-if "%CHOICE%"=="1" goto :RUN_1211
+if "%CHOICE%"=="1" goto :RUN_1201
+if "%CHOICE%"=="1.20.1" goto :RUN_1201
+if "%CHOICE%"=="1201" goto :RUN_1201
+
+if "%CHOICE%"=="2" goto :RUN_1211
 if "%CHOICE%"=="1.21.1" goto :RUN_1211
 if "%CHOICE%"=="1211" goto :RUN_1211
 
-if "%CHOICE%"=="2" goto :RUN_12111
+if "%CHOICE%"=="3" goto :RUN_12111
 if "%CHOICE%"=="1.21.11" goto :RUN_12111
 if "%CHOICE%"=="12111" goto :RUN_12111
-
-if "%CHOICE%"=="3" goto :RUN_1201
-if "%CHOICE%"=="1.20.1" goto :RUN_1201
-if "%CHOICE%"=="1201" goto :RUN_1201
 
 if "%CHOICE%"=="4" goto :RUN_261
 if "%CHOICE%"=="26.1" goto :RUN_261

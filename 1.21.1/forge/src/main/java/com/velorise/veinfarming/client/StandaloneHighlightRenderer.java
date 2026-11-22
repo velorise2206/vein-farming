@@ -466,7 +466,6 @@ public class StandaloneHighlightRenderer {
         }
 
         PoseStack poseStack = new PoseStack();
-        poseStack.mulPose(event.getPoseStack());
         Camera camera = event.getCamera();
         Vec3 camPos = camera.getPosition();
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();

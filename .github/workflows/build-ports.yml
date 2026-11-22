@@ -262,10 +262,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
+          distribution: zulu
+          java-version: '8'
+      - uses: actions/setup-java@v4
+        with:
           distribution: temurin
-          java-version: |
-            8
-            21
+          java-version: '21'
           cache: gradle
       - run: chmod +x gradlew
       - run: ./gradlew build --stacktrace
@@ -285,10 +287,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
+          distribution: zulu
+          java-version: '8'
+      - uses: actions/setup-java@v4
+        with:
           distribution: temurin
-          java-version: |
-            8
-            25
+          java-version: '25'
           cache: gradle
       - run: chmod +x gradlew
       - run: ./gradlew build --stacktrace
@@ -308,10 +312,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
+          distribution: zulu
+          java-version: '8'
+      - uses: actions/setup-java@v4
+        with:
           distribution: temurin
-          java-version: |
-            8
-            25
+          java-version: '25'
           cache: gradle
       - run: chmod +x gradlew
       - run: ./gradlew build --stacktrace
@@ -331,10 +337,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
+          distribution: zulu
+          java-version: '8'
+      - uses: actions/setup-java@v4
+        with:
           distribution: temurin
-          java-version: |
-            8
-            25
+          java-version: '25'
           cache: gradle
       - run: chmod +x gradlew
       - run: ./gradlew build --stacktrace

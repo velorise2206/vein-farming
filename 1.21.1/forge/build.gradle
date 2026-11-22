@@ -100,4 +100,5 @@ sourceSets.configureEach {
 
 tasks.named('processResources').configure {
     mustRunAfter(tasks.named('compileJava'))
+    doNotTrackState('Shares output directory with compileJava')
 }

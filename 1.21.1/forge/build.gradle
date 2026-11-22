@@ -91,3 +91,9 @@ sourceSets.main.java {
 sourceSets.main.resources {
     srcDir file('../common/src/main/resources')
 }
+
+sourceSets.configureEach {
+    def dir = layout.buildDirectory.dir('sourcesSets/' + it.name)
+    it.output.resourcesDir = dir.get().asFile
+    it.java.destinationDirectory.set(dir)
+}

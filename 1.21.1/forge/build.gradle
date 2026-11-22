@@ -68,6 +68,7 @@ tasks.named('processResources', ProcessResources).configure {
 }
 
 tasks.named('jar', Jar).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes([
             'Specification-Title'     : mod_id,
@@ -92,8 +93,11 @@ sourceSets.main.resources {
     srcDir file('../common/src/main/resources')
 }
 
-sourceSets.configureEach {
-    def dir = layout.buildDirectory.dir('sourcesSets/' + it.name)
-    it.output.resourcesDir = dir.get().asFile
-    it.java.destinationDirectory.set(dir)
+tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
+    doFirst {
+        copy {
+            from(sourceSets.main.java.destinationDirectory)
+            into(sourceSets.main.output.resourcesDir)
+        }
+    }
 }

@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Loaders-NeoForge%20%7C%20Fabric%20%7C%20Forge-orange.svg" alt="Mod Loaders" />
 </p>
 
-The ultimate universal AOE farming mod for **1.20.1** (Forge & Fabric), **1.21.1** (NeoForge & Fabric), **1.21.11** (NeoForge & Fabric), **26.1.2** (NeoForge & Fabric), **26.2** (NeoForge & Fabric), and **26.3** (NeoForge & Fabric).
+The ultimate universal AOE farming mod for **1.20.1** (Forge & Fabric), **1.21.1** (Forge, NeoForge & Fabric), **1.21.11** (Forge, NeoForge & Fabric), **26.1.2** (Forge, NeoForge & Fabric), **26.2** (Forge, NeoForge & Fabric), and **26.3** (Forge, NeoForge & Fabric).
 Built as a seamless companion for **[LiteMiner](https://modrinth.com/mod/liteminer)** and **[FTB Ultimine](https://modrinth.com/mod/ftb-ultimine)**, with full **Standalone Mode** support featuring its own client-side in-world highlight outline preview!
 
 Brings **Area Tilling**, **Smart Water Bucket Irrigation (2-Pass Hybrid Grid)**, **Smart Mass Planting with Spatial Geometry**, **AOE Bone Meal**, **Bedrock-Style Flower Propagation**, **Root-Preserving Column Crop Harvesting**, **Stem-Protected Fruit Harvesting**, **Mass Destruction Mode with Drop Aggregation**, **Batch Composting**, **Custom Advancements**, and **Auto-Replanting** to Minecraft!
@@ -22,20 +22,25 @@ Brings **Area Tilling**, **Smart Water Bucket Irrigation (2-Pass Hybrid Grid)**,
 
 ## 📦 Multi-Loader Project Architecture
 
-This repository contains all 12 official editions of Vein Farming across 6 Minecraft versions:
+This repository contains all 17 official editions of Vein Farming across 6 Minecraft versions:
 
 | Subfolder | Minecraft Version | Mod Loader | Java | Status | Release Artifact |
 | :--- | :---: | :---: | :---: | :---: | :--- |
 | [`1.20.1/forge/`](1.20.1/forge/) | **1.20.1** | Forge 47.3.0+ | Java 17 | Stable Release | `vein_farming-1.20.1-forge-2.2.0.jar` |
 | [`1.20.1/fabric/`](1.20.1/fabric/) | **1.20.1** | Fabric Loader 0.16.9+ | Java 17 | Stable Release | `vein_farming-1.20.1-fabric-2.2.0.jar` |
+| [`1.21.1/forge/`](1.21.1/forge/) | **1.21.1** | Forge 52.1.20+ | Java 21 | Stable Release | `vein_farming-1.21.1-forge-2.2.0.jar` |
 | [`1.21.1/neoforge/`](1.21.1/neoforge/) | **1.21.1** | NeoForge 21.1.65+ | Java 21 | Stable Release | `vein_farming-1.21.1-neoforge-2.2.0.jar` |
 | [`1.21.1/fabric/`](1.21.1/fabric/) | **1.21.1** | Fabric Loader 0.16.9+ | Java 21 | Stable Release | `vein_farming-fabric-1.21.1-2.2.0.jar` |
+| [`1.21.11/forge/`](1.21.11/forge/) | **1.21.11** | Forge 61.2.4+ | Java 21 | Stable Release | `vein_farming-1.21.11-forge-2.2.0.jar` |
 | [`1.21.11/neoforge/`](1.21.11/neoforge/) | **1.21.11** | NeoForge 21.11.45+ | Java 21 | Stable Release | `vein_farming-1.21.11-neoforge-2.2.0.jar` |
 | [`1.21.11/fabric/`](1.21.11/fabric/) | **1.21.11** | Fabric Loader 0.17.3+ | Java 21 | Stable Release | `vein_farming-fabric-1.21.11-2.2.0.jar` |
+| [`26.1/forge/`](26.1/forge/) | **26.1.2** | Forge 64.1.6+ | Java 25 | Snapshot / Pre | `vein_farming-26.1.2-forge-2.2.0.jar` |
 | [`26.1/neoforge/`](26.1/neoforge/) | **26.1.2** | NeoForge 26.1.2+ | Java 25 | Snapshot / Pre | `vein_farming-26.1.2-neoforge-2.2.0.jar` |
 | [`26.1/fabric/`](26.1/fabric/) | **26.1.2** | Fabric Loader 0.17.3+ | Java 25 | Snapshot / Pre | `vein_farming-26.1.2-fabric-2.2.0.jar` |
+| [`26.2/forge/`](26.2/forge/) | **26.2** | Forge 65.1.6+ | Java 25 | Snapshot / Pre | `vein_farming-26.2-forge-2.2.0.jar` |
 | [`26.2/neoforge/`](26.2/neoforge/) | **26.2** | NeoForge 26.2+ | Java 25 | Snapshot / Pre | `vein_farming-26.2-neoforge-2.2.0.jar` |
 | [`26.2/fabric/`](26.2/fabric/) | **26.2** | Fabric Loader 0.17.3+ | Java 25 | Snapshot / Pre | `vein_farming-26.2-fabric-2.2.0.jar` |
+| [`26.3/forge/`](26.3/forge/) | **26.3** | Forge 66.1.9+ | Java 25 | Snapshot / Pre | `vein_farming-26.3-forge-2.2.0.jar` |
 | [`26.3/neoforge/`](26.3/neoforge/) | **26.3** | NeoForge 26.3+ | Java 25 | Snapshot / Pre | `vein_farming-26.3-neoforge-2.2.0.jar` |
 | [`26.3/fabric/`](26.3/fabric/) | **26.3** | Fabric Loader 0.17.3+ | Java 25 | Snapshot / Pre | `vein_farming-26.3-fabric-2.2.0.jar` |
 

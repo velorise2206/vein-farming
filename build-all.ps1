@@ -10,6 +10,9 @@ $OutputDirectory = Join-Path (Join-Path $WorkspaceParent 'mods') 'vein_farming'
 
 $OriginalJavaHome = $env:JAVA_HOME
 $OriginalPath = $env:Path
+if ([string]::IsNullOrWhiteSpace($env:JDK8) -and (Test-Path 'C:\Program Files\Eclipse Adoptium\jdk-8.0.512.9-hotspot\bin\java.exe')) {
+    $env:JDK8 = 'C:\Program Files\Eclipse Adoptium\jdk-8.0.512.9-hotspot'
+}
 
 function Use-JavaHome([string]$VariableName, [string]$Label) {
     $candidate = [Environment]::GetEnvironmentVariable($VariableName)
@@ -113,14 +116,19 @@ New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 try {
     Invoke-Build 'Forge 1.20.1'     '1.20.1\forge'     'JAVA17_HOME' 'JDK 17'
     Invoke-Build 'Fabric 1.20.1'    '1.20.1\fabric'    'JAVA17_HOME' 'JDK 17'
+    Invoke-Build 'Forge 1.21.1'     '1.21.1\forge'     'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'NeoForge 1.21.1'  '1.21.1\neoforge'  'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'Fabric 1.21.1'    '1.21.1\fabric'    'JAVA21_HOME' 'JDK 21'
+    Invoke-Build 'Forge 1.21.11'    '1.21.11\forge'    'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'NeoForge 1.21.11' '1.21.11\neoforge' 'JAVA21_HOME' 'JDK 21'
     Invoke-Build 'Fabric 1.21.11'   '1.21.11\fabric'   'JAVA21_HOME' 'JDK 21'
+    Invoke-Build 'Forge 26.1.2'     '26.1\forge'       'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'NeoForge 26.1.2'  '26.1\neoforge'    'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'Fabric 26.1.2'    '26.1\fabric'      'JAVA25_HOME' 'JDK 25'
+    Invoke-Build 'Forge 26.2'       '26.2\forge'       'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'NeoForge 26.2'    '26.2\neoforge'    'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'Fabric 26.2'      '26.2\fabric'      'JAVA25_HOME' 'JDK 25'
+    Invoke-Build 'Forge 26.3'       '26.3\forge'       'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'NeoForge 26.3'    '26.3\neoforge'    'JAVA25_HOME' 'JDK 25'
     Invoke-Build 'Fabric 26.3'      '26.3\fabric'      'JAVA25_HOME' 'JDK 25'
 
@@ -134,6 +142,11 @@ try {
         'vein_farming-1.20.1-fabric-*.jar' `
         'Fabric 1.20.1'
 
+    $forge121Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '1.21.1\forge\build\libs') `
+        'vein_farming-1.21.1-forge-*.jar' `
+        'Forge 1.21.1'
+
     $neoForge121Jar = Get-LatestReleaseJar `
         (Join-Path $Root '1.21.1\neoforge\build\libs') `
         'vein_farming-1.21.1-neoforge-*.jar' `
@@ -143,6 +156,11 @@ try {
         (Join-Path $Root '1.21.1\fabric\build\libs') `
         'vein_farming-fabric-1.21.1-*.jar' `
         'Fabric 1.21.1'
+
+    $forge12111Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '1.21.11\forge\build\libs') `
+        'vein_farming-1.21.11-forge-*.jar' `
+        'Forge 1.21.11'
 
     $neoForge12111Jar = Get-LatestReleaseJar `
         (Join-Path $Root '1.21.11\neoforge\build\libs') `
@@ -154,6 +172,11 @@ try {
         'vein_farming-fabric-1.21.11-*.jar' `
         'Fabric 1.21.11'
 
+    $forge261Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.1\forge\build\libs') `
+        'vein_farming-26.1.2-forge-*.jar' `
+        'Forge 26.1.2'
+
     $neoForge261Jar = Get-LatestReleaseJar `
         (Join-Path $Root '26.1\neoforge\build\libs') `
         'vein_farming-26.1.2-neoforge-*.jar' `
@@ -164,6 +187,11 @@ try {
         'vein_farming-26.1.2-fabric-*.jar' `
         'Fabric 26.1.2'
 
+    $forge262Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.2\forge\build\libs') `
+        'vein_farming-26.2-forge-*.jar' `
+        'Forge 26.2'
+
     $neoForge262Jar = Get-LatestReleaseJar `
         (Join-Path $Root '26.2\neoforge\build\libs') `
         'vein_farming-26.2-neoforge-*.jar' `
@@ -173,6 +201,11 @@ try {
         (Join-Path $Root '26.2\fabric\build\libs') `
         'vein_farming-26.2-fabric-*.jar' `
         'Fabric 26.2'
+
+    $forge263Jar = Get-LatestReleaseJar `
+        (Join-Path $Root '26.3\forge\build\libs') `
+        'vein_farming-26.3-forge-*.jar' `
+        'Forge 26.3'
 
     $neoForge263Jar = Get-LatestReleaseJar `
         (Join-Path $Root '26.3\neoforge\build\libs') `
@@ -188,14 +221,19 @@ try {
     Write-Host "Copying artifacts to release directory..." -ForegroundColor Cyan
     Copy-ReleaseJar $forge1201Jar     'Forge 1.20.1'
     Copy-ReleaseJar $fabric1201Jar    'Fabric 1.20.1'
+    Copy-ReleaseJar $forge121Jar 'Forge 1.21.1'
     Copy-ReleaseJar $neoForge121Jar   'NeoForge 1.21.1'
     Copy-ReleaseJar $fabric121Jar     'Fabric 1.21.1'
+    Copy-ReleaseJar $forge12111Jar 'Forge 1.21.11'
     Copy-ReleaseJar $neoForge12111Jar 'NeoForge 1.21.11'
     Copy-ReleaseJar $fabric12111Jar   'Fabric 1.21.11'
+    Copy-ReleaseJar $forge261Jar 'Forge 26.1.2'
     Copy-ReleaseJar $neoForge261Jar   'NeoForge 26.1.2'
     Copy-ReleaseJar $fabric261Jar     'Fabric 26.1.2'
+    Copy-ReleaseJar $forge262Jar 'Forge 26.2'
     Copy-ReleaseJar $neoForge262Jar   'NeoForge 26.2'
     Copy-ReleaseJar $fabric262Jar     'Fabric 26.2'
+    Copy-ReleaseJar $forge263Jar 'Forge 26.3'
     Copy-ReleaseJar $neoForge263Jar   'NeoForge 26.3'
     Copy-ReleaseJar $fabric263Jar     'Fabric 26.3'
 
@@ -207,7 +245,7 @@ try {
     }
 
     Write-Host ""
-    Write-Host "All 12 builds completed successfully!" -ForegroundColor Green
+    Write-Host "All 17 builds completed successfully!" -ForegroundColor Green
     Write-Host "Release directory: $OutputDirectory" -ForegroundColor Green
 }
 finally {

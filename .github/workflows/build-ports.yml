@@ -233,3 +233,114 @@ jobs:
         with:
           name: vein-farming-26.3-neoforge
           path: 26.3/neoforge/build/libs/*.jar
+
+  forge-1-21-1:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 1.21.1/forge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew build --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vein-farming-1.21.1-forge
+          path: 1.21.1/forge/build/libs/*.jar
+
+  forge-1-21-11:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 1.21.11/forge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            8
+            21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew build --stacktrace
+        env:
+          JDK8: ${{ env.JAVA_HOME_8_X64 }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vein-farming-1.21.11-forge
+          path: 1.21.11/forge/build/libs/*.jar
+
+  forge-26-1:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 26.1/forge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            8
+            25
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew build --stacktrace
+        env:
+          JDK8: ${{ env.JAVA_HOME_8_X64 }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vein-farming-26.1.2-forge
+          path: 26.1/forge/build/libs/*.jar
+
+  forge-26-2:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 26.2/forge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            8
+            25
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew build --stacktrace
+        env:
+          JDK8: ${{ env.JAVA_HOME_8_X64 }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vein-farming-26.2-forge
+          path: 26.2/forge/build/libs/*.jar
+
+  forge-26-3:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 26.3/forge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            8
+            25
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew build --stacktrace
+        env:
+          JDK8: ${{ env.JAVA_HOME_8_X64 }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vein-farming-26.3-forge
+          path: 26.3/forge/build/libs/*.jar
